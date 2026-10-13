@@ -84,6 +84,8 @@ async function main() {
       email,
       senhaHash: await gerarHash(senha),
       status: "ativo",
+      // Em produção, a senha do seed é provisória: o painel pede outra no primeiro acesso.
+      trocarSenha: !comExemplos,
     });
     console.log(`\nUsuário criado:\n  e-mail: ${email}\n  senha:  ${senha}\n`);
   }

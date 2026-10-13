@@ -13,9 +13,10 @@ import {
   type Publico,
 } from "@/lib/dados";
 import { diasUteis, emailValido } from "@/lib/regras";
-import { novoToken, usuarioAtual, type UsuarioLogado } from "./auth";
+import { encerrarOutrasSessoes, novoToken, usuarioAtual, type UsuarioLogado } from "./auth";
 import { diasDesde } from "./datas";
 import { auditar, enviarEmail, urlBase } from "./registro";
+import { SENHA_MINIMA, conferirSenha, gerarHash } from "./senha";
 
 // Todas as escritas do painel (chamadas pelos endpoints em /api). Cada ação revalida a sessão e as regras de
 // transição de status no servidor — a interface só esconde o que não se aplica.
@@ -24,9 +25,12 @@ export type Resultado = { ok: true; mensagem?: string; link?: string; id?: strin
 
 const falha = (erro: string): Resultado => ({ ok: false, erro });
 
+export const ERRO_TROCAR_SENHA = "Troque sua senha provisória antes de continuar.";
+
 async function comUsuario(f: (u: UsuarioLogado) => Promise<Resultado>): Promise<Resultado> {
   const u = await usuarioAtual();
   if (!u) return falha("Sua sessão expirou. Entre de novo.");
+  if (u.trocarSenha) return falha(ERRO_TROCAR_SENHA);
   return f(u);
 }
 
@@ -462,14 +466,35 @@ export async function editarTerapeuta(id: string, d: DadosTerapeuta & { active: 
 
 const CONVITE_VALIDADE_MS = 7 * 24 * 60 * 60 * 1000;
 
-export async function convidarUsuario(d: { name: string; email: string }) {
+/** Cadastra alguém da equipe. Sem senha, vai um convite por e-mail; com senha, o acesso já fica ativo e a senha é provisória. */
+export async function cadastrarUsuario(d: { name: string; email: string; senha?: string }) {
   return comUsuario(async (u) => {
     const nome = d.name.trim();
     const email = d.email.trim().toLowerCase();
     if (!nome) return falha("Informe o nome.");
     if (!emailValido(email)) return falha("E-mail inválido.");
+    if (d.senha !== undefined && d.senha.length < SENHA_MINIMA) return falha(`A senha provisória precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);
     const [existe] = await db.select({ id: schema.usuarios.id }).from(schema.usuarios).where(eq(schema.usuarios.email, email));
     if (existe) return falha("Já existe um usuário com este e-mail.");
+
+    if (d.senha !== undefined) {
+      await db.insert(schema.usuarios).values({
+        id: crypto.randomUUID(),
+        nome,
+        email,
+        senhaHash: await gerarHash(d.senha),
+        status: "ativo",
+        trocarSenha: true,
+      });
+      // A senha não vai no e-mail: quem cadastrou a passa por outro canal.
+      await enviarEmail({
+        para: email,
+        assunto: "Seu acesso ao painel do Projeto Florescer",
+        corpo: `Olá, ${primeiroNome(nome)}.\n\n${u.nome} criou seu acesso ao painel do Projeto Florescer. Entre com este e-mail e a senha provisória que ${primeiroNome(u.nome)} vai passar a você — no primeiro acesso, o painel pede uma senha nova.\n\n${urlBase()}/login`,
+      });
+      await auditar(u.id, "usuario_criado", undefined, email);
+      return { ok: true, mensagem: `Acesso de ${nome} criado. Passe a senha provisória por um canal seguro.` };
+    }
 
     const token = novoToken();
     await db.insert(schema.usuarios).values({
@@ -489,4 +514,22 @@ export async function convidarUsuario(d: { name: string; email: string }) {
     await auditar(u.id, "usuario_convidado", undefined, email);
     return { ok: true, mensagem: `Convite enviado a ${nome}.`, link };
   });
+}
+
+/** Troca a senha da pessoa logada. Com senha provisória, a atual não é pedida de novo (acabou de ser usada no login). */
+export async function trocarSenha(d: { atual: string; nova: string; confirmacao: string }): Promise<Resultado> {
+  const u = await usuarioAtual();
+  if (!u) return falha("Sua sessão expirou. Entre de novo.");
+  if (d.nova.length < SENHA_MINIMA) return falha(`A nova senha precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);
+  if (d.nova !== d.confirmacao) return falha("As senhas não conferem.");
+
+  const [linha] = await db.select({ senhaHash: schema.usuarios.senhaHash }).from(schema.usuarios).where(eq(schema.usuarios.id, u.id));
+  const hash = linha?.senhaHash ?? "";
+  if (!u.trocarSenha && !(await conferirSenha(d.atual, hash))) return falha("A senha atual está incorreta.");
+  if (hash && (await conferirSenha(d.nova, hash))) return falha("A nova senha precisa ser diferente da atual.");
+
+  await db.update(schema.usuarios).set({ senhaHash: await gerarHash(d.nova), trocarSenha: false }).where(eq(schema.usuarios.id, u.id));
+  await encerrarOutrasSessoes(u.id);
+  await auditar(u.id, "senha_trocada");
+  return { ok: true, mensagem: "Senha alterada." };
 }

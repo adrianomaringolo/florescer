@@ -121,6 +121,8 @@ export interface Usuario {
   email: string;
   last: string;
   status: UsuarioStatus;
+  /** Ainda não trocou a senha provisória definida por outra pessoa. */
+  senhaProvisoria: boolean;
 }
 
 export const MOTIVOS_RETORNO = [

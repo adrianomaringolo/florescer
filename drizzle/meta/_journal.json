@@ -22,6 +22,13 @@
       "when": 1791860034792,
       "tag": "0002_genero_terapeuta",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791912221359,
+      "tag": "0003_trocar_senha",
+      "breakpoints": true
     }
   ]
 }

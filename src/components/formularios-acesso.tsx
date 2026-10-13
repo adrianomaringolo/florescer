@@ -49,7 +49,7 @@ function Erro({ estado }: { estado: EstadoForm }) {
   return estado.erro ? <p role="alert" className="text-sm font-medium text-terracota-tinta">{estado.erro}</p> : null;
 }
 
-/** Envia o formulário para um endpoint; em caso de sucesso, vai para o painel. */
+/** Envia o formulário para um endpoint; em caso de sucesso, vai para o painel (ou para a troca de senha, se a atual for provisória). */
 function useEnvio(caminho: string, montar: (form: FormData) => Record<string, unknown>) {
   const [estado, setEstado] = useState<EstadoForm>({});
   const [enviando, setEnviando] = useState(false);
@@ -58,8 +58,8 @@ function useEnvio(caminho: string, montar: (form: FormData) => Record<string, un
     const corpo = montar(new FormData(e.currentTarget));
     setEnviando(true);
     try {
-      await api(caminho, { corpo });
-      window.location.assign("/");
+      const r = await api<{ trocarSenha?: boolean }>(caminho, { corpo });
+      window.location.assign(r.trocarSenha ? "/trocar-senha" : "/");
     } catch (err) {
       setEstado({ erro: err instanceof ErroApi ? err.message : "Não foi possível concluir. Tente de novo.", email: String(corpo.email ?? "") });
       setEnviando(false);
@@ -70,9 +70,12 @@ function useEnvio(caminho: string, montar: (form: FormData) => Record<string, un
 
 export function FormularioLogin() {
   const { estado, enviar, enviando } = useEnvio("/api/auth/login", (f) => ({ email: f.get("email"), senha: f.get("senha") }));
-  // Quem já tem sessão vai direto para o painel.
+  // Quem já tem sessão vai direto para o painel (ou para a troca da senha provisória).
   useEffect(() => {
-    api("/api/painel").then(() => window.location.assign("/"), () => undefined);
+    api("/api/painel").then(
+      () => window.location.assign("/"),
+      (e) => e instanceof ErroApi && e.dados.trocarSenha && window.location.assign("/trocar-senha"),
+    );
   }, []);
   return (
     <form onSubmit={enviar} className="flex flex-col gap-4">
@@ -97,4 +100,30 @@ export function FormularioConvite({ token }: { token: string }) {
       <button type="submit" disabled={enviando} className={botaoPublico}>{enviando ? "Salvando…" : "Criar senha e entrar"}</button>
     </form>
   );
+}
+
+/** Troca de senha da pessoa logada. Com senha provisória, a atual não é pedida (acabou de ser digitada no login). */
+export function FormularioTrocarSenha({ pedirAtual }: { pedirAtual: boolean }) {
+  const { estado, enviar, enviando } = useEnvio("/api/auth/trocar-senha", (f) => ({
+    atual: f.get("atual") ?? "",
+    nova: f.get("nova"),
+    confirmacao: f.get("confirmacao"),
+  }));
+  return (
+    <form onSubmit={enviar} className="flex flex-col gap-4">
+      {pedirAtual && <CampoSenha rotulo="Senha atual" name="atual" required autoComplete="current-password" />}
+      <CampoSenha rotulo="Nova senha" ajuda="Pelo menos 8 caracteres." name="nova" required minLength={8} autoComplete="new-password" />
+      <CampoSenha rotulo="Confirme a nova senha" name="confirmacao" required minLength={8} autoComplete="new-password" />
+      <Erro estado={estado} />
+      <button type="submit" disabled={enviando} className={botaoPublico}>{enviando ? "Salvando…" : pedirAtual ? "Trocar senha" : "Salvar e entrar no painel"}</button>
+    </form>
+  );
+}
+
+export function BotaoSair({ className, children = "Sair" }: { className?: string; children?: React.ReactNode }) {
+  const sair = async () => {
+    await api("/api/auth/logout", { corpo: {} }).catch(() => undefined);
+    window.location.assign("/login");
+  };
+  return <button type="button" onClick={sair} className={className}>{children}</button>;
 }

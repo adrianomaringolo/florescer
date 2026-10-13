@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ne } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -27,6 +27,14 @@ export async function criarSessao(usuarioId: string) {
   });
 }
 
+/** Apaga as outras sessões da pessoa (depois de trocar a senha, só o aparelho atual continua conectado). */
+export async function encerrarOutrasSessoes(usuarioId: string) {
+  const token = (await cookies()).get(COOKIE_SESSAO)?.value;
+  await db
+    .delete(schema.sessoes)
+    .where(and(eq(schema.sessoes.usuarioId, usuarioId), token ? ne(schema.sessoes.id, hashToken(token)) : undefined));
+}
+
 export async function encerrarSessao() {
   const jar = await cookies();
   const token = jar.get(COOKIE_SESSAO)?.value;
@@ -38,6 +46,8 @@ export interface UsuarioLogado {
   id: string;
   nome: string;
   email: string;
+  /** Entrou com senha provisória: só pode trocar a senha ou sair. */
+  trocarSenha: boolean;
 }
 
 /** Usuário da sessão atual, ou null. Cacheado por requisição. */
@@ -45,12 +55,18 @@ export const usuarioAtual = cache(async (): Promise<UsuarioLogado | null> => {
   const token = (await cookies()).get(COOKIE_SESSAO)?.value;
   if (!token) return null;
   const [linha] = await db
-    .select({ id: schema.usuarios.id, nome: schema.usuarios.nome, email: schema.usuarios.email, status: schema.usuarios.status })
+    .select({
+      id: schema.usuarios.id,
+      nome: schema.usuarios.nome,
+      email: schema.usuarios.email,
+      status: schema.usuarios.status,
+      trocarSenha: schema.usuarios.trocarSenha,
+    })
     .from(schema.sessoes)
     .innerJoin(schema.usuarios, eq(schema.sessoes.usuarioId, schema.usuarios.id))
     .where(and(eq(schema.sessoes.id, hashToken(token)), gt(schema.sessoes.expira, new Date())));
   if (!linha || linha.status !== "ativo") return null;
-  return { id: linha.id, nome: linha.nome, email: linha.email };
+  return { id: linha.id, nome: linha.nome, email: linha.email, trocarSenha: linha.trocarSenha };
 });
 
 /** Para páginas: redireciona ao login se não houver sessão válida. */

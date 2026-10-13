@@ -12,6 +12,8 @@ export const usuarios = pgTable("usuarios", {
   email: text("email").notNull().unique(),
   senhaHash: text("senha_hash"),
   status: text("status").$type<UsuarioStatus>().notNull().default("convite"),
+  /** Senha provisória (definida por outra pessoa da equipe): o painel exige a troca no próximo acesso. */
+  trocarSenha: boolean("trocar_senha").notNull().default(false),
   conviteToken: text("convite_token").unique(),
   conviteExpira: data("convite_expira"),
   ultimoAcesso: data("ultimo_acesso"),

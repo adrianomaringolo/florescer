@@ -45,9 +45,16 @@ escolher). Use `pnpm db:seed -- --sem-exemplos` para criar só o usuário, sem c
 - E-mail e senha (hash **scrypt**). Sessão em cookie `httpOnly` com token aleatório; o banco
   guarda só o SHA-256 do token. Validade de 30 dias.
 - Sem níveis de acesso (1.3): toda pessoa usuária ativa pode tudo.
-- **Convite**: gera um link `/convite/<token>` válido por 7 dias e de uso único; a pessoa
-  cria a senha e entra. Sem provedor de e-mail, o link aparece num aviso para copiar.
-- **Esqueci a senha**: ainda não há fluxo; por ora, reconvide a pessoa (fora do escopo, item 6).
+- **Cadastro de usuário** (tela Usuários), de duas formas:
+  - **Senha provisória**: quem cadastra define a senha (o painel sugere uma) e a passa à pessoa
+    por outro canal. O acesso já nasce ativo, mas com `trocar_senha`: até criar uma senha
+    própria em `/trocar-senha`, a pessoa não vê nenhum dado — `/api/painel` e as ações
+    respondem 403.
+  - **Convite**: gera um link `/convite/<token>` válido por 7 dias e de uso único; a pessoa
+    cria a senha e entra. Sem provedor de e-mail, o link aparece num aviso para copiar.
+- **Trocar senha**: `/trocar-senha`, pela barra lateral. Pede a senha atual (exceto quando a
+  senha é provisória) e encerra as sessões nos outros aparelhos.
+- **Esqueci a senha**: ainda não há fluxo (fora do escopo, item 6).
 - `src/middleware.ts` só barra quem não tem cookie; a validação real acontece em cada página
   e ação (`usuarioAtual` / `exigirUsuario`).
 
@@ -57,6 +64,7 @@ escolher). Use `pnpm db:seed -- --sem-exemplos` para criar só o usuário, sem c
 |---|---|
 | `/login` | Entrada da equipe |
 | `/convite/[token]` | Criação de senha a partir do convite |
+| `/trocar-senha` | Troca de senha (obrigatória no primeiro acesso com senha provisória) |
 | `/termo/[token]` | Termo de compromisso — link individual por caso, aceite único |
 | `POST /api/solicitacoes` | Cria um caso a partir do formulário (`Authorization: Bearer $INTAKE_TOKEN`) |
 
@@ -124,6 +132,8 @@ não substitui a leitura humana.
    pnpm db:neon:migrate
    SEED_ADMIN_EMAIL=voce@florescer.org SEED_ADMIN_SENHA='...' pnpm db:neon:seed
    ```
+   Com `--sem-exemplos` (já incluso no `db:neon:seed`), a senha do seed é provisória: o painel
+   pede uma nova no primeiro acesso.
 3. **Vercel**: importe o repositório e defina `DATABASE_URL` (pooled), `APP_URL`
    (ex.: `https://florescer.vercel.app`) e `INTAKE_TOKEN`. Região das funções: a mais próxima
    do banco.

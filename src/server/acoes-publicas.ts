@@ -11,6 +11,8 @@ import { SENHA_MINIMA, conferirSenha, gerarHash } from "./senha";
 
 export interface EstadoForm {
   erro?: string;
+  /** Login com senha provisória: o próximo passo é criar uma senha nova. */
+  trocarSenha?: boolean;
 }
 
 export async function entrar(dados: { email: string; senha: string }): Promise<EstadoForm> {
@@ -23,7 +25,7 @@ export async function entrar(dados: { email: string; senha: string }): Promise<E
   if (u.status !== "ativo") return { erro: "Este acesso está desativado. Fale com a equipe." };
   await criarSessao(u.id);
   await auditar(u.id, "login");
-  return {};
+  return u.trocarSenha ? { trocarSenha: true } : {};
 }
 
 export async function sair() {
@@ -51,7 +53,7 @@ export async function criarSenha(dados: { token: string; senha: string; confirma
 
   await db
     .update(schema.usuarios)
-    .set({ senhaHash: await gerarHash(senha), status: "ativo", conviteToken: null, conviteExpira: null })
+    .set({ senhaHash: await gerarHash(senha), status: "ativo", trocarSenha: false, conviteToken: null, conviteExpira: null })
     .where(eq(schema.usuarios.id, u.id));
   await criarSessao(u.id);
   await auditar(u.id, "convite_aceito");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Botao, Campo, Cartao, Modal, Selo, TituloPagina, type Tom } from "@/components/ui";
+import { Botao, Campo, Cartao, Modal, OpcaoRadio, Selo, TituloPagina, inputClasse, type Tom } from "@/components/ui";
 import type { UsuarioStatus } from "@/lib/dados";
 import { emailValido } from "@/lib/regras";
 import { usePainel } from "@/lib/store";
@@ -12,13 +12,35 @@ const SITUACAO: Record<UsuarioStatus, [string, Tom]> = {
   inativo: ["Desativado", "neutro"],
 };
 
+const SENHA_MINIMA = 8;
+
+/** Senha provisória legível (sem 0/O, 1/l), para ser passada por mensagem. */
+function gerarSenha() {
+  const letras = "abcdefghjkmnpqrstuvwxyz";
+  const digitos = "23456789";
+  const sorteio = crypto.getRandomValues(new Uint32Array(10));
+  const parte = (de: number, ate: number, base: string) => Array.from(sorteio.slice(de, ate), (n) => base[n % base.length]).join("");
+  return `${parte(0, 4, letras)}-${parte(4, 8, letras)}-${parte(8, 10, digitos)}`;
+}
+
+type Forma = "convite" | "senha";
+
 const iniciais = (nome: string) => nome.split(" ").map((w) => w[0]).slice(0, 2).join("");
 
 export default function Usuarios() {
-  const { usuarios, convidarUsuario, ocupado } = usePainel();
+  const { usuarios, cadastrarUsuario, ocupado } = usePainel();
   const [aberto, setAberto] = useState(false);
-  const [f, setF] = useState({ name: "", email: "" });
-  const valido = f.name.trim() && emailValido(f.email);
+  const [f, setF] = useState({ name: "", email: "", forma: "senha" as Forma, senha: "" });
+  const senhaOk = f.forma === "convite" || f.senha.length >= SENHA_MINIMA;
+  const valido = f.name.trim() && emailValido(f.email) && senhaOk;
+  const abrir = () => {
+    setF({ name: "", email: "", forma: "senha", senha: gerarSenha() });
+    setAberto(true);
+  };
+  const salvar = async () => {
+    const ok = await cadastrarUsuario({ name: f.name.trim(), email: f.email.trim(), ...(f.forma === "senha" && { senha: f.senha }) });
+    if (ok) setAberto(false);
+  };
 
   return (
     <>
@@ -27,7 +49,7 @@ export default function Usuarios() {
           <TituloPagina>Usuários</TituloPagina>
           <span className="text-[13px] text-tinta-suave">Pessoas cadastradas têm acesso completo ao painel.</span>
         </div>
-        <Botao variante="primario" onClick={() => { setF({ name: "", email: "" }); setAberto(true); }}>Cadastrar usuário</Botao>
+        <Botao variante="primario" onClick={abrir}>Cadastrar usuário</Botao>
       </header>
 
       <Cartao className="overflow-x-auto">
@@ -35,7 +57,7 @@ export default function Usuarios() {
           <span>Usuário</span><span>Último acesso</span><span>Situação</span>
         </div>
         {usuarios.map((u) => {
-          const [rotulo, tom] = SITUACAO[u.status];
+          const [rotulo, tom]: [string, Tom] = u.status === "ativo" && u.senhaProvisoria ? ["Senha provisória", "atencao"] : SITUACAO[u.status];
           return (
             <div key={u.id} className="grid min-w-[520px] grid-cols-[minmax(0,1.6fr)_140px_130px] items-center gap-4 border-b border-linha-suave px-[18px] py-3 text-[13px] last:border-b-0">
               <span className="flex min-w-0 items-center gap-2.5">
@@ -57,7 +79,7 @@ export default function Usuarios() {
         aberto={aberto}
         aoFechar={() => setAberto(false)}
         titulo="Cadastrar usuário"
-        descricao="A pessoa recebe um convite por e-mail para criar a senha."
+        descricao="Defina como a pessoa vai entrar no painel pela primeira vez."
         rodape={
           <>
             <Botao tamanho="sm" onClick={() => setAberto(false)}>Cancelar</Botao>
@@ -65,15 +87,49 @@ export default function Usuarios() {
               variante="primario"
               tamanho="sm"
               disabled={!valido || ocupado}
-              onClick={async () => { if (await convidarUsuario({ name: f.name.trim(), email: f.email.trim() })) setAberto(false); }}
+              onClick={salvar}
             >
-              Enviar convite
+              {f.forma === "senha" ? "Cadastrar" : "Enviar convite"}
             </Botao>
           </>
         }
       >
         <Campo rotulo="Nome completo" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Ex.: Joana Martins" />
         <Campo rotulo="E-mail" type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="nome@email.com" />
+        <div role="radiogroup" aria-label="Primeiro acesso" className="flex flex-col gap-2">
+          <OpcaoRadio marcado={f.forma === "senha"} onClick={() => setF({ ...f, forma: "senha" })}>
+            <span className="flex flex-col gap-0.5">
+              <span className="font-medium">Senha provisória</span>
+              <span className="text-xs text-tinta-suave">Você passa a senha à pessoa; no primeiro acesso, o painel pede uma senha nova.</span>
+            </span>
+          </OpcaoRadio>
+          <OpcaoRadio marcado={f.forma === "convite"} onClick={() => setF({ ...f, forma: "convite" })}>
+            <span className="flex flex-col gap-0.5">
+              <span className="font-medium">Convite por e-mail</span>
+              <span className="text-xs text-tinta-suave">A pessoa recebe um link, válido por 7 dias, para criar a própria senha.</span>
+            </span>
+          </OpcaoRadio>
+        </div>
+        {f.forma === "senha" && (
+          <div className="flex flex-col gap-1.5 text-[13px]">
+            <label htmlFor="senha-provisoria" className="font-medium">Senha provisória</label>
+            <span className="flex gap-2">
+              <input
+                id="senha-provisoria"
+                aria-describedby="senha-provisoria-ajuda"
+                className={`${inputClasse} min-w-0 flex-1 font-mono`}
+                value={f.senha}
+                onChange={(e) => setF({ ...f, senha: e.target.value })}
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <Botao tamanho="sm" onClick={() => setF({ ...f, senha: gerarSenha() })}>Gerar outra</Botao>
+            </span>
+            <span id="senha-provisoria-ajuda" className={f.senha.length >= SENHA_MINIMA ? "text-xs text-tinta-suave" : "text-xs text-terracota-tinta"}>
+              Pelo menos {SENHA_MINIMA} caracteres. Anote antes de cadastrar e passe à pessoa por um canal seguro — ela não vai no e-mail.
+            </span>
+          </div>
+        )}
       </Modal>
     </>
   );

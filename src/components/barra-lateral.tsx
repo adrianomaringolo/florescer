@@ -31,6 +31,7 @@ export function BarraLateral() {
         </Link>
         <div className="flex items-center gap-3 text-xs text-areia/80">
           <span className="hidden sm:inline">Encaminhamentos terapêuticos</span>
+          <Link href="/trocar-senha" className="text-creme/85 underline-offset-2 hover:text-creme hover:underline lg:hidden">Senha</Link>
           <button type="button" onClick={sair} className="rounded-md border border-creme/25 px-2.5 py-1 text-creme hover:bg-creme/10 lg:hidden">Sair</button>
         </div>
       </div>
@@ -57,9 +58,11 @@ export function BarraLateral() {
           <span className="truncate text-[13px] font-medium">{usuario.nome}</span>
           <span className="truncate text-xs text-areia/75">{usuario.email}</span>
         </div>
-        <button type="button" onClick={sair} className="self-start text-xs text-areia/80 underline-offset-2 hover:text-creme hover:underline">
-          Sair
-        </button>
+        <div className="flex items-center gap-3 text-xs">
+          <Link href="/trocar-senha" className="text-areia/80 underline-offset-2 hover:text-creme hover:underline">Trocar senha</Link>
+          <span aria-hidden className="text-areia/40">·</span>
+          <button type="button" onClick={sair} className="text-areia/80 underline-offset-2 hover:text-creme hover:underline">Sair</button>
+        </div>
       </div>
     </aside>
   );

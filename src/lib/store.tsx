@@ -46,7 +46,8 @@ interface Painel extends DadosPainel {
   reenviarFicha: (casoId: string) => Promise<boolean>;
   cadastrarTerapeuta: (t: { name: string; email: string; genero: string; publico: Publico[]; disp: string; cap: number }) => Promise<boolean>;
   editarTerapeuta: (id: string, t: { name: string; email: string; genero: string; publico: Publico[]; disp: string; cap: number; active: boolean }) => Promise<boolean>;
-  convidarUsuario: (u: { name: string; email: string }) => Promise<boolean>;
+  /** Sem senha, envia convite; com senha, cria o acesso com senha provisória. */
+  cadastrarUsuario: (u: { name: string; email: string; senha?: string }) => Promise<boolean>;
   /** Cadastro manual de caso; devolve o id do caso criado. */
   cadastrarCaso: (c: Record<string, unknown>) => Promise<string | null>;
 }
@@ -78,6 +79,7 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
       setFalhou(false);
     } catch (e) {
       if (e instanceof ErroApi && e.status === 401) router.replace("/login");
+      else if (e instanceof ErroApi && e.dados.trocarSenha) router.replace("/trocar-senha");
       else setFalhou(true);
     }
   }, [router]);
@@ -134,7 +136,7 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
         const r = await rodar(() => acao("/api/casos", c));
         return r?.ok ? (r.id ?? null) : null;
       },
-      convidarUsuario: (u) => executar(() => acao("/api/usuarios", u)),
+      cadastrarUsuario: (u) => executar(() => acao("/api/usuarios", u)),
     },
     [estado, ocupado, avisos, mostrar, dispensarAviso, executar, rodar],
   );

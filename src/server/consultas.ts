@@ -56,7 +56,7 @@ export async function carregarPainel() {
   const retornosPorCaso = new Map<string, LinhaRetorno[]>();
   for (const r of rs) retornosPorCaso.set(r.casoId, [...(retornosPorCaso.get(r.casoId) ?? []), r]);
 
-  const usuarios: Usuario[] = us.map((u) => ({ id: u.id, name: u.nome, email: u.email, last: ultimoAcesso(u.ultimoAcesso), status: u.status }));
+  const usuarios: Usuario[] = us.map((u) => ({ id: u.id, name: u.nome, email: u.email, last: ultimoAcesso(u.ultimoAcesso), status: u.status, senhaProvisoria: u.trocarSenha }));
   return {
     terapeutas: ts.map(paraTerapeuta),
     casos: cs.map((c) => paraCaso(c, porId, retornosPorCaso.get(c.id) ?? [])),

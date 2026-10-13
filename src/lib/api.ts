@@ -31,7 +31,10 @@ export async function acao(caminho: string, corpo: unknown = {}): Promise<Result
     return await api<Resultado>(caminho, { corpo });
   } catch (e) {
     if (e instanceof ErroApi) {
-      if (e.status === 401 && typeof window !== "undefined") window.location.assign("/login");
+      if (typeof window !== "undefined") {
+        if (e.status === 401) window.location.assign("/login");
+        else if (e.dados.trocarSenha) window.location.assign("/trocar-senha");
+      }
       return { ok: false, erro: e.message };
     }
     throw e;
