@@ -16,9 +16,13 @@
     "db:studio": "drizzle-kit studio",
     "db:up": "scripts/db-local.sh up",
     "db:down": "scripts/db-local.sh down",
-    "db:reset": "scripts/db-local.sh reset && pnpm db:setup"
+    "db:reset": "scripts/db-local.sh reset && pnpm db:setup",
+    "db:neon:migrate": "tsx --env-file=.env.neon.local src/db/migrate.ts",
+    "db:neon:seed": "tsx --env-file=.env.neon.local src/db/seed.ts --sem-exemplos"
   },
   "dependencies": {
+    "@neon/config": "^1.8.6",
+    "@neon/env": "^1.5.3",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.4",
     "next": "^15.5.27",

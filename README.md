@@ -115,16 +115,20 @@ não substitui a leitura humana.
    *Connection details*, copie duas strings:
    - **Pooled connection** (host com `-pooler`) → `DATABASE_URL`
    - **Direct connection** → `DATABASE_URL_DIRETA` (usada só pelas migrações)
-2. **Migrações e primeiro usuário**, da sua máquina, apontando para o Neon:
+   Com o CLI do Neon (`neon link`), as variáveis são baixadas para o `.env.local`. Mova
+   `DATABASE_URL`, `DATABASE_URL_UNPOOLED` e `NEON_BRANCH` para `.env.neon.local` e devolva ao
+   `.env.local` a URL do Postgres local, para o dev não usar o banco de produção. Use
+   `neon deploy --no-env-pull` pelo mesmo motivo.
+2. **Migrações e primeiro usuário**, da sua máquina, lendo o `.env.neon.local`:
    ```bash
-   DATABASE_URL="<pooled>" DATABASE_URL_DIRETA="<direta>" pnpm db:migrate
-   DATABASE_URL="<pooled>" SEED_ADMIN_EMAIL=voce@florescer.org pnpm db:seed -- --sem-exemplos
+   pnpm db:neon:migrate
+   SEED_ADMIN_EMAIL=voce@florescer.org SEED_ADMIN_SENHA='...' pnpm db:neon:seed
    ```
 3. **Vercel**: importe o repositório e defina `DATABASE_URL` (pooled), `APP_URL`
    (ex.: `https://florescer.vercel.app`) e `INTAKE_TOKEN`. Região das funções: a mais próxima
    do banco.
 4. A cada mudança no schema: `pnpm db:generate`, commit da migração em `drizzle/` e
-   `pnpm db:migrate` contra o Neon antes do deploy.
+   `pnpm db:neon:migrate` antes do deploy.
 
 No plano gratuito, o Neon suspende o banco após 5 minutos sem uso e o retoma sozinho na próxima
 consulta — a primeira requisição depois de um tempo parado leva um pouco mais.
