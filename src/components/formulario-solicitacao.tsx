@@ -135,6 +135,7 @@ export function FormularioSolicitacao() {
   const [v, setV] = useState<Record<string, string>>({});
   const [consentimento, setConsentimento] = useState(false);
   const [cienteValor, setCienteValor] = useState(false);
+  const liberado = consentimento && cienteValor;
   const [grade, setGrade] = useState<Grade>({});
   const [erro, setErro] = useState<{ texto: string; campo?: string }>();
   const [enviando, setEnviando] = useState(false);
@@ -266,8 +267,19 @@ export function FormularioSolicitacao() {
             </Confirmacao>
             {erroDe("cienteValor") && <span className="text-xs font-medium text-terracota-tinta">{erroDe("cienteValor")}</span>}
           </div>
+          {!liberado && (
+            <p id="aviso-liberar" className="rounded-[10px] bg-caramelo-suave px-4 py-3 text-sm text-caramelo-tinta">
+              Marque os dois itens acima para preencher o restante do formulário.
+            </p>
+          )}
         </Secao>
 
+        {/* Os dados só podem ser preenchidos depois do aceite do termo de dados e da ciência do valor social. */}
+        <fieldset
+          disabled={!liberado}
+          aria-describedby={liberado ? undefined : "aviso-liberar"}
+          className={clsx("min-w-0 transition-opacity", !liberado && "pointer-events-none select-none opacity-45")}
+        >
         <Secao numero="02" titulo="Dados pessoais">
           <Campo nome="nome" rotulo="Nome completo" erro={erroDe("nome")}>
             <input {...campo("nome")} autoComplete="name" />
@@ -386,6 +398,7 @@ export function FormularioSolicitacao() {
             <textarea {...campo("comentarios")} rows={3} />
           </Campo>
         </Secao>
+        </fieldset>
 
         <div className="flex flex-col gap-4 rounded-b-2xl border-t border-linha-suave bg-fundo px-6 pb-8 pt-6 sm:px-9">
           <div className="flex flex-col gap-1 rounded-[10px] bg-terracota-suave px-4 py-3.5 text-sm text-terracota-tinta">
@@ -397,7 +410,7 @@ export function FormularioSolicitacao() {
               {erro.texto}
             </p>
           )}
-          <button type="submit" disabled={enviando} className={clsx(botaoPublico, "self-start")}>
+          <button type="submit" disabled={enviando || !liberado} className={clsx(botaoPublico, "self-start")}>
             {enviando ? "Enviando…" : "Enviar solicitação"}
           </button>
           <p className="text-xs text-tinta-suave">

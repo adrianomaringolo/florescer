@@ -1,6 +1,6 @@
 // Cliente dos endpoints /api. O front só fala com o banco por aqui.
 
-export type Resultado = { ok: true; mensagem?: string; link?: string } | { ok: false; erro: string };
+export type Resultado = { ok: true; mensagem?: string; link?: string; id?: string } | { ok: false; erro: string };
 
 export class ErroApi extends Error {
   constructor(

@@ -20,7 +20,7 @@ import { auditar, enviarEmail, urlBase } from "./registro";
 // Todas as escritas do painel (chamadas pelos endpoints em /api). Cada ação revalida a sessão e as regras de
 // transição de status no servidor — a interface só esconde o que não se aplica.
 
-export type Resultado = { ok: true; mensagem?: string; link?: string } | { ok: false; erro: string };
+export type Resultado = { ok: true; mensagem?: string; link?: string; id?: string } | { ok: false; erro: string };
 
 const falha = (erro: string): Resultado => ({ ok: false, erro });
 
@@ -255,6 +255,125 @@ export async function reenviarFicha(casoId: string) {
     await enviarEmail({ para: t.email, assunto: `Novo encaminhamento: ${c.nome}`, corpo: `${textoFicha(c)}\n\n${textoOrientacao()}`, casoId });
     await auditar(u.id, "ficha_reenviada", casoId, t.nome);
     return { ok: true, mensagem: `Ficha reenviada a ${t.nome}.` };
+  });
+}
+
+// --- Cadastro manual de caso ------------------------------------------------------
+
+export type SituacaoManual = "acolhimento" | "escolha" | "atendimento" | "desligado";
+
+export interface CasoManual {
+  nome: string;
+  idade: string;
+  publico: string;
+  email: string;
+  telefone: string;
+  motivo: string;
+  disponibilidade: string;
+  /** AAAA-MM-DD */
+  recebidoEm: string;
+  situacao: string;
+  risco: boolean;
+  terapeutaId: string;
+  /** AAAA-MM-DD — início do atendimento ou data do desligamento. */
+  desde: string;
+  termoOk: boolean;
+  repasseOk: boolean;
+  primeiroOk: boolean;
+  motivoDesligamento: string;
+}
+
+const PUBLICOS_CASO = ["Adulto", "Adolescente", "Criança"] as const;
+const SITUACOES: SituacaoManual[] = ["acolhimento", "escolha", "atendimento", "desligado"];
+
+/** Data de um campo AAAA-MM-DD (meio-dia em Brasília, para não virar o dia no fuso), sem aceitar datas futuras. */
+function dataDoCampo(valor: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
+  const d = new Date(`${valor}T12:00:00-03:00`);
+  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== valor || d.getTime() > Date.now() + 24 * 3600 * 1000) return null;
+  return d;
+}
+
+/**
+ * Registra um caso que já existia antes do sistema (ou chegou por outro canal), já na situação em que está.
+ * Não envia e-mails: boas-vindas e ficha seguem o fluxo normal só para o que acontecer daqui em diante.
+ */
+export async function cadastrarCasoManual(d: CasoManual) {
+  return comUsuario(async (u) => {
+    const nomeLimpo = d.nome.trim().replace(/\s+/g, " ").slice(0, 200);
+    if (!nomeLimpo) return falha("Informe o nome.");
+    const idade = d.idade.trim() === "" ? null : Number(d.idade);
+    if (idade !== null && (!Number.isInteger(idade) || idade < 0 || idade > 120)) return falha("Idade inválida.");
+    const publico = PUBLICOS_CASO.find((p) => p === d.publico);
+    if (!publico) return falha("Escolha o público.");
+    const email = d.email.trim().toLowerCase().slice(0, 200);
+    if (email && !emailValido(email)) return falha("E-mail inválido.");
+    const telefone = d.telefone.trim().slice(0, 40);
+    const recebidoEm = dataDoCampo(d.recebidoEm);
+    if (!recebidoEm) return falha("Data de chegada inválida.");
+    const situacao = SITUACOES.find((s) => s === d.situacao);
+    if (!situacao) return falha("Escolha a situação atual do caso.");
+
+    const base = {
+      id: crypto.randomUUID(),
+      nome: nomeLimpo,
+      idade,
+      publico,
+      email,
+      telefone,
+      motivo: d.motivo.trim().slice(0, 4000),
+      disponibilidade: d.disponibilidade.trim().slice(0, 500),
+      recebidoEm,
+      termoToken: novoToken(),
+    };
+    const agora = new Date();
+
+    if (situacao === "acolhimento" || situacao === "escolha") {
+      // Mesma regra da entrada pelo formulário (2.5): risco ou contato incompleto vão para Pendente.
+      const incompleto = !email && !telefone;
+      const status = situacao === "acolhimento" && (d.risco || incompleto) ? "pendente" : situacao;
+      await db.insert(schema.casos).values({ ...base, status, statusDesde: agora, risco: situacao === "acolhimento" && d.risco });
+      await auditar(u.id, "caso_cadastrado", base.id, `manual: ${status}`);
+      const aviso = status === "pendente" ? (d.risco ? " Entrou como pendente por sinal de risco." : " Entrou como pendente: faltam e-mail e telefone.") : "";
+      return { ok: true, mensagem: `${nomeLimpo} foi cadastrado(a).${aviso}`, id: base.id };
+    }
+
+    const desde = dataDoCampo(d.desde);
+    if (!desde) return falha(situacao === "atendimento" ? "Data de início do atendimento inválida." : "Data do desligamento inválida.");
+    if (desde < recebidoEm) return falha("A data não pode ser anterior à chegada do caso.");
+
+    if (situacao === "desligado") {
+      const motivo = MOTIVOS_DESLIGAMENTO.find((m) => m === d.motivoDesligamento);
+      if (!motivo) return falha("Escolha o motivo do desligamento.");
+      const t = d.terapeutaId ? await buscarTerapeuta(d.terapeutaId) : undefined;
+      if (d.terapeutaId && !t) return falha("Terapeuta não encontrado.");
+      await db.insert(schema.casos).values({ ...base, status: "desligado", statusDesde: desde, terapeutaId: t?.id ?? null, motivoDesligamento: motivo });
+      await auditar(u.id, "caso_cadastrado", base.id, "manual: desligado");
+      return { ok: true, mensagem: `${nomeLimpo} foi cadastrado(a) como desligado(a).`, id: base.id };
+    }
+
+    // Em atendimento: o terapeuta precisa atender o público e ter vaga — a capacidade vale também para casos antigos.
+    const t = await buscarTerapeuta(d.terapeutaId);
+    if (!t) return falha("Escolha o terapeuta que atende este caso.");
+    if (!t.publico.includes(PUBLICO_DO_CASO[publico])) return falha(`${t.nome} não atende este público.`);
+    const resultado = await db.transaction(async (tx) => {
+      const [atual] = await tx.select({ vagas: schema.terapeutas.vagas }).from(schema.terapeutas).where(eq(schema.terapeutas.id, t.id)).for("update");
+      if ((await ocupacao(t.id, tx)) >= atual.vagas) return "sem_vaga" as const;
+      await tx.insert(schema.casos).values({
+        ...base,
+        status: "atendimento",
+        statusDesde: desde,
+        terapeutaId: t.id,
+        encaminhadoEm: desde,
+        termoOk: d.termoOk,
+        repasseOk: d.repasseOk,
+        primeiroOk: d.primeiroOk,
+      });
+      return "ok" as const;
+    });
+    if (resultado === "sem_vaga") return falha(`${t.nome} não tem vagas livres. Aumente as vagas no cadastro do terapeuta antes.`);
+    await auditar(u.id, "caso_cadastrado", base.id, `manual: atendimento com ${t.nome}`);
+    return { ok: true, mensagem: `${nomeLimpo} foi cadastrado(a) em atendimento com ${t.nome}.`, id: base.id };
   });
 }
 

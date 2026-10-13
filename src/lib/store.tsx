@@ -47,6 +47,8 @@ interface Painel extends DadosPainel {
   cadastrarTerapeuta: (t: { name: string; email: string; genero: string; publico: Publico[]; disp: string; cap: number }) => Promise<boolean>;
   editarTerapeuta: (id: string, t: { name: string; email: string; genero: string; publico: Publico[]; disp: string; cap: number; active: boolean }) => Promise<boolean>;
   convidarUsuario: (u: { name: string; email: string }) => Promise<boolean>;
+  /** Cadastro manual de caso; devolve o id do caso criado. */
+  cadastrarCaso: (c: Record<string, unknown>) => Promise<string | null>;
 }
 
 const Ctx = createContext<Painel | null>(null);
@@ -84,9 +86,10 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
     void recarregar();
   }, [recarregar]);
 
-  const executar = useCallback(
+  /** Roda uma ação, mostra o aviso e recarrega os dados; devolve o Resultado (null se a chamada falhou). */
+  const rodar = useCallback(
     (acao: () => Promise<Resultado>) =>
-      new Promise<boolean>((resolve) => {
+      new Promise<Resultado | null>((resolve) => {
         iniciar(async () => {
           try {
             const r = await acao();
@@ -96,15 +99,16 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
             } else {
               mostrar({ texto: r.erro, erro: true });
             }
-            resolve(r.ok);
+            resolve(r);
           } catch {
             mostrar({ texto: "Não foi possível concluir. Tente de novo.", erro: true });
-            resolve(false);
+            resolve(null);
           }
         });
       }),
     [mostrar, recarregar],
   );
+  const executar = useCallback((acao: () => Promise<Resultado>) => rodar(acao).then((r) => !!r?.ok), [rodar]);
 
   const value = useMemo<Painel | null>(
     () =>
@@ -126,9 +130,13 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
       reenviarFicha: (casoId) => executar(() => acao(`/api/casos/${casoId}/reenviar-ficha`)),
       cadastrarTerapeuta: (t) => executar(() => acao("/api/terapeutas", t)),
       editarTerapeuta: (id, t) => executar(() => acao(`/api/terapeutas/${id}`, t)),
+      cadastrarCaso: async (c) => {
+        const r = await rodar(() => acao("/api/casos", c));
+        return r?.ok ? (r.id ?? null) : null;
+      },
       convidarUsuario: (u) => executar(() => acao("/api/usuarios", u)),
     },
-    [estado, ocupado, avisos, mostrar, dispensarAviso, executar],
+    [estado, ocupado, avisos, mostrar, dispensarAviso, executar, rodar],
   );
 
   if (!value) {

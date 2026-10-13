@@ -81,9 +81,14 @@ export default function Casos() {
   const { casos } = usePainel();
   return (
     <>
-      <header className="flex flex-wrap items-end justify-between gap-2">
-        <TituloPagina>Casos</TituloPagina>
-        <span className="text-[13px] text-tinta-suave">{casos.length} pessoas · histórico preservado</span>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1.5">
+          <TituloPagina>Casos</TituloPagina>
+          <span className="text-[13px] text-tinta-suave">{casos.length} pessoas · histórico preservado</span>
+        </div>
+        <Link href="/casos/novo" className="rounded-lg bg-vinho px-4 py-2.5 text-sm font-semibold text-creme hover:bg-vinho-escuro">
+          Cadastrar caso
+        </Link>
       </header>
       <LinkFormulario />
       <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
