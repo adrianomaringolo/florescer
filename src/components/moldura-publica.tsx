@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { EMAIL_PROJETO } from "@/lib/dados";
 import { Logo } from "./marca";
 
 /** Fundo creme com logo vinho — usado nas páginas fora do painel. */
@@ -5,11 +7,28 @@ export function MolduraPublica({ children, largura = 720 }: { children: React.Re
   return (
     <div className="flex min-h-screen flex-col items-center gap-8 bg-creme px-4 pb-14 pt-10">
       <header className="w-full text-vinho" style={{ maxWidth: largura }}>
-        <Logo className="h-14 w-auto" />
+        <Link href="/solicitar" aria-label="Florescer — solicitar atendimento" className="inline-block">
+          <Logo className="h-14 w-auto" />
+        </Link>
       </header>
       {children}
-      <footer className="text-xs text-tinta-suave">Projeto Florescer · projetoflorescer.jung@gmail.com</footer>
+      <RodapePublico />
     </div>
+  );
+}
+
+/** Contato e links legais, presentes em todas as páginas públicas. */
+export function RodapePublico({ className = "text-tinta-suave", destaque = "hover:text-vinho" }: { className?: string; destaque?: string }) {
+  return (
+    <footer className={`flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-xs ${className}`}>
+      <span>Projeto Florescer</span>
+      <span aria-hidden>·</span>
+      <a href={`mailto:${EMAIL_PROJETO}`} className={`underline-offset-2 hover:underline ${destaque}`}>{EMAIL_PROJETO}</a>
+      <span aria-hidden>·</span>
+      <Link href="/privacidade" className={`underline-offset-2 hover:underline ${destaque}`}>Privacidade</Link>
+      <span aria-hidden>·</span>
+      <Link href="/termos" className={`underline-offset-2 hover:underline ${destaque}`}>Termos de uso</Link>
+    </footer>
   );
 }
 

@@ -2,7 +2,9 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { Ponto, Selo, TituloPagina } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Rosa } from "@/components/marca";
+import { Botao, Ponto, Selo, TituloPagina } from "@/components/ui";
 import type { Caso } from "@/lib/dados";
 import { STATUS, parado, plural } from "@/lib/regras";
 import { usePainel } from "@/lib/store";
@@ -39,6 +41,42 @@ function CartaoCaso({ c }: { c: Caso }) {
   );
 }
 
+/** Link público de inscrição em destaque: é por ele que chegam os casos novos. */
+function LinkFormulario() {
+  const { avisar } = usePainel();
+  // A origem vem do navegador, para o link sair certo em qualquer ambiente (local ou produção).
+  const [url, setUrl] = useState("/solicitar");
+  useEffect(() => setUrl(`${window.location.origin}/solicitar`), []);
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      avisar("Link do formulário copiado.");
+    } catch {
+      avisar("Não foi possível copiar. Selecione o link e copie manualmente.");
+    }
+  };
+
+  return (
+    <section className="relative flex flex-wrap items-center gap-x-6 gap-y-4 overflow-hidden rounded-xl bg-vinho px-5 py-4 text-creme sm:px-6">
+      <Rosa className="pointer-events-none absolute -right-6 -top-8 h-36 w-auto text-vinho-escuro opacity-70" />
+      <div className="relative flex min-w-[240px] flex-1 flex-col gap-1">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-areia">Formulário público de inscrição</span>
+        <span className="text-sm text-creme/90">Compartilhe este link com quem procura atendimento. Cada envio vira um caso novo aqui.</span>
+        <a href={url} target="_blank" rel="noreferrer" className="mt-1 break-all font-mono text-[15px] font-medium text-creme underline decoration-areia/60 underline-offset-4 hover:decoration-creme">
+          {url}
+        </a>
+      </div>
+      <div className="relative flex flex-wrap gap-2">
+        <Botao tamanho="sm" onClick={copiar} className="!border-transparent !bg-creme !text-vinho-escuro hover:!bg-areia">Copiar link</Botao>
+        <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-lg border border-areia/60 px-3 py-[7px] text-[13px] font-medium text-creme hover:bg-vinho-escuro">
+          Abrir formulário ↗
+        </a>
+      </div>
+    </section>
+  );
+}
+
 export default function Casos() {
   const { casos } = usePainel();
   return (
@@ -47,6 +85,7 @@ export default function Casos() {
         <TituloPagina>Casos</TituloPagina>
         <span className="text-[13px] text-tinta-suave">{casos.length} pessoas · histórico preservado</span>
       </header>
+      <LinkFormulario />
       <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
         <div className="grid min-w-[900px] grid-cols-5 gap-2.5">
           {STATUS.map((s) => {

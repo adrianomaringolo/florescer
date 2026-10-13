@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // Checagem rápida de presença do cookie; a validação real da sessão acontece no
 // servidor (usuarioAtual) em cada endpoint. Os endpoints /api autenticam por conta própria
 // e respondem 401 em JSON, em vez de redirecionar.
-const PUBLICAS = ["/login", "/solicitar", "/convite/", "/termo/", "/api/"];
+const PUBLICAS = ["/login", "/solicitar", "/privacidade", "/termos", "/convite/", "/termo/", "/api/"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

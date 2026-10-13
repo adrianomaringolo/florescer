@@ -61,6 +61,8 @@ export function camposFicha(f: FichaFormulario): { rotulo: string; valor: string
 export const DIAS_SEMANA = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"] as const;
 export const PERIODOS_DIA = ["Manhã", "Tarde", "Noite"] as const;
 export const VALOR_SESSAO = "R$ 80,00";
+export const EMAIL_PROJETO = "projetoflorescer.jung@gmail.com";
+export const INSTAGRAM_PROJETO = "@projetoflorescer.jung";
 
 /** Gênero no cadastro de terapeutas — os mesmos termos da preferência no formulário. */
 export const GENEROS_TERAPEUTA = ["Mulher", "Homem", "Outro"] as const;

@@ -3,13 +3,12 @@
 import clsx from "clsx";
 import { useState } from "react";
 import { api, ErroApi } from "@/lib/api";
-import { DIAS_SEMANA, PERIODOS_DIA, VALOR_SESSAO } from "@/lib/dados";
+import Link from "next/link";
+import { DIAS_SEMANA, EMAIL_PROJETO, INSTAGRAM_PROJETO as INSTAGRAM, PERIODOS_DIA, VALOR_SESSAO } from "@/lib/dados";
 import { Rosa } from "./marca";
 import { botaoPublico, campoPublico } from "./moldura-publica";
 import { Caixa } from "./ui";
 
-const EMAIL_PROJETO = "projetoflorescer.jung@gmail.com";
-const INSTAGRAM = "@projetoflorescer.jung";
 
 type Grade = Record<string, string[]>;
 
@@ -245,6 +244,13 @@ export function FormularioSolicitacao() {
               <p>
                 <b className="text-tinta">Seus direitos.</b> A qualquer momento, você pode solicitar acesso, atualização, correção ou eliminação dos
                 seus dados, e revogar este consentimento. Para isso, escreva para {EMAIL_PROJETO} informando seu nome completo e telefone.
+              </p>
+              <p>
+                Os detalhes estão na nossa{" "}
+                <Link href="/privacidade" target="_blank" className="font-medium text-vinho underline underline-offset-2">
+                  política de privacidade
+                </Link>
+                .
               </p>
             </div>
           </details>
