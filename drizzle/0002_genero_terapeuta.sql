@@ -1,0 +1,1 @@
+ALTER TABLE "terapeutas" ADD COLUMN "genero" text DEFAULT '' NOT NULL;

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F3F5F4;color:#16201C;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#1C6A4C}a:hover{color:#124D37}*{box-sizing:border-box}button{font-family:inherit}</style>
+</helmet>
+<div style="display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh;min-width:1100px">
+
+<aside style="background:#FFFFFF;border-right:1px solid #DCE3DF;padding:24px 16px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;align-items:center;gap:10px;padding:0 8px"><div style="flex:none;width:32px;height:32px;border-radius:8px;background:#1C6A4C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">F</div><div style="display:flex;flex-direction:column;gap:1px">
+    <div style="font-size:17px;font-weight:700;letter-spacing:-0.01em">Projeto Florescer</div>
+    <div style="font-size:12px;color:#56625C">Encaminhamentos terapêuticos</div>
+  </div></div>
+  <nav style="display:flex;flex-direction:column;gap:2px">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="3">
+      <button onClick="{{ n.go }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;background:{{ n.bg }};color:#16201C;font-size:14px;font-weight:{{ n.weight }};padding:9px 10px;border-radius:8px;cursor:pointer;text-align:left">
+        <span>{{ n.label }}</span><span style="font-size:12px;color:#56625C">{{ n.count }}</span>
+      </button>
+    </sc-for>
+  </nav>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid #DCE3DF;border-radius:10px;background:#F3F5F4">
+    <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#56625C">Fontes</div>
+    <div style="font-size:13px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:3px;background:#5E8C6A"></span>Planilha de solicitantes</div>
+    <div style="font-size:13px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:3px;background:#5E8C6A"></span>Planilha de terapeutas</div>
+    <div style="font-size:12px;color:#56625C">Sincronizado às 08:42</div>
+  </div>
+</aside>
+
+<main style="padding:32px 40px 48px;display:flex;flex-direction:column;gap:24px;min-width:0;max-width:1240px;width:100%">
+
+  <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:13px;color:#56625C">Quarta-feira, 7 de outubro</div>
+          <h1 style="margin:0;font-weight:700;font-size:28px;letter-spacing:-0.02em">Bom dia. {{ decisionsCount }} casos precisam de você.</h1>
+        </div>
+      </header>
+
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px">
+        <sc-for list="{{ statusTiles }}" as="s" hint-placeholder-count="6">
+          <button onClick="{{ s.go }}" style="border:1px solid #DCE3DF;background:#FFFFFF;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;min-height:104px">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#56625C;line-height:1.3"><span style="flex:none;width:8px;height:8px;border-radius:4px;background:{{ s.dot }}"></span>{{ s.short }}</span>
+            <span style="font-size:30px;font-weight:700;line-height:1;margin-top:auto">{{ s.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start">
+        <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;overflow:hidden">
+          <div style="padding:16px 18px;border-bottom:1px solid #E7ECE9;display:flex;justify-content:space-between;align-items:baseline">
+            <h2 style="margin:0;font-size:15px;font-weight:600">Precisa da sua decisão</h2>
+            <span style="font-size:12px;color:#56625C">ordenado por urgência</span>
+          </div>
+          <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid #EEF2F0">
+              <span style="flex:none;width:8px;height:8px;border-radius:4px;background:{{ d.dot }}"></span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                <div style="font-size:14px;font-weight:500">{{ d.name }}</div>
+                <div style="font-size:13px;color:#56625C;text-wrap:pretty">{{ d.text }}</div>
+              </div>
+              <button onClick="{{ d.open }}" style="flex:none;border:1px solid #C9D2CD;background:#FFFFFF;color:#16201C;font-size:13px;font-weight:500;padding:7px 12px;border-radius:8px;cursor:pointer">{{ d.cta }}</button>
+            </div>
+          </sc-for>
+        </section>
+
+        <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <h2 style="margin:0;font-size:15px;font-weight:600">Vagas por terapeuta</h2>
+            <span style="font-size:12px;color:#56625C">{{ freeTotal }} vagas livres</span>
+          </div>
+          <sc-for list="{{ therapists }}" as="t" hint-placeholder-count="5">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="font-weight:500">{{ t.name }}</span><span style="color:#56625C">{{ t.occLabel }}</span></div>
+              <div style="height:6px;border-radius:3px;background:#E7ECE9;overflow:hidden"><div style="height:100%;width:{{ t.pct }};background:{{ t.bar }};border-radius:3px"></div></div>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isCases }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between">
+        <h1 style="margin:0;font-weight:700;font-size:28px;letter-spacing:-0.02em">Casos</h1>
+        <span style="font-size:13px;color:#56625C">{{ casesTotal }} pessoas · histórico preservado</span>
+      </header>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:8px">
+        <sc-for list="{{ columns }}" as="col" hint-placeholder-count="6">
+          <div style="display:flex;flex-direction:column;gap:8px;background:#E9EEEB;border-radius:12px;padding:10px">
+            <div style="display:flex;align-items:center;gap:6px;padding:4px 4px 6px;font-size:12px;font-weight:600;line-height:1.3"><span style="flex:none;width:8px;height:8px;border-radius:4px;background:{{ col.dot }}"></span><span style="flex:1">{{ col.short }}</span><span style="color:#56625C;font-weight:500">{{ col.count }}</span></div>
+            <sc-for list="{{ col.items }}" as="c" hint-placeholder-count="2">
+              <button onClick="{{ c.open }}" style="border:1px solid {{ c.border }};background:#FFFFFF;border-radius:9px;padding:11px;display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer">
+                <span style="font-size:14px;font-weight:500;color:#16201C">{{ c.name }}</span>
+                <span style="font-size:12px;color:#56625C">{{ c.age }} anos · {{ c.terLabel }}</span>
+                <span style="font-size:12px;color:{{ c.daysColor }};font-weight:{{ c.daysWeight }}">{{ c.daysLabel }}</span>
+                <sc-if value="{{ c.hasChecks }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:11px;padding:2px 7px;border-radius:999px;background:{{ c.tBg }};color:{{ c.tColor }}">{{ c.tLabel }}</span><span style="font-size:11px;padding:2px 7px;border-radius:999px;background:{{ c.rBg }};color:{{ c.rColor }}">{{ c.rLabel }}</span></span></sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <button onClick="{{ goCases }}" style="align-self:flex-start;border:0;background:none;padding:0;color:#1C6A4C;font-size:13px;cursor:pointer">← Casos</button>
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h1 style="margin:0;font-weight:700;font-size:28px;letter-spacing:-0.02em">{{ cur.name }}</h1>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#56625C">
+            <span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #DCE3DF;padding:4px 10px;border-radius:999px;color:#16201C"><span style="width:8px;height:8px;border-radius:4px;background:{{ cur.dot }}"></span>{{ cur.statusLabel }}</span>
+            <span>há {{ cur.days }} dias neste status</span>
+          </div>
+        </div>
+        <div style="flex:none;display:flex;gap:8px">
+          <button onClick="{{ openFicha }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;cursor:pointer;color:#16201C">Ver ficha</button>
+          <button style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;cursor:pointer;color:#16201C">Registrar desligamento</button>
+        </div>
+      </header>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+          <sc-if value="{{ showAcolh }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <h2 style="margin:0;font-size:15px;font-weight:600">Acolhimento</h2>
+                <span style="font-size:13px;color:#56625C;text-wrap:pretty">Dê as boas-vindas e envie o termo de compromisso. Depois da conversa inicial, conclua o acolhimento.</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #E7ECE9;border-radius:10px">
+                <span style="flex:none;width:10px;height:10px;border-radius:5px;background:{{ welcomeDot }}"></span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:500">E-mail de boas-vindas + termo de compromisso</span><span style="font-size:12px;color:#56625C">{{ welcomeNote }}</span></div>
+                <button onClick="{{ openWelcome }}" style="flex:none;border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:7px 12px;border-radius:8px;cursor:pointer;color:#16201C">{{ welcomeCta }}</button>
+              </div>
+              <div style="display:flex;justify-content:flex-end">
+                <button onClick="{{ finishAcolh }}" style="border:0;background:#1C6A4C;color:#fff;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;cursor:pointer">Concluir acolhimento</button>
+              </div>
+            </section>
+          </sc-if>
+          <sc-if value="{{ showAtend }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <h2 style="margin:0;font-size:15px;font-weight:600">Acompanhamento</h2>
+                <span style="font-size:13px;color:#56625C">Em atendimento com {{ cur.ter }}.</span>
+              </div>
+              <sc-for list="{{ atendChecks }}" as="k" hint-placeholder-count="2">
+                <button onClick="{{ k.toggle }}" style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid {{ k.border }};background:{{ k.bg }};border-radius:10px;text-align:left;cursor:pointer;color:#16201C">
+                  <span style="flex:none;width:20px;height:20px;border-radius:5px;border:1.5px solid {{ k.boxBorder }};background:{{ k.boxBg }};color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center">{{ k.mark }}</span>
+                  <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:500">{{ k.label }}</span><span style="font-size:12px;color:#56625C">{{ k.note }}</span></span>
+                </button>
+              </sc-for>
+              <div style="display:flex;justify-content:flex-end;padding-top:4px">
+                <button onClick="{{ openRet }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;cursor:pointer;color:#16201C">Retornar para escolha de terapeuta</button>
+              </div>
+            </section>
+          </sc-if>
+          <sc-if value="{{ hasRetorno }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:2px;padding:12px 16px;background:#F6EBD3;border-radius:10px;font-size:13px;color:#7A4E0E">
+              <span style="font-weight:600">Retornou da terapia com {{ cur.retorno.de }}</span>
+              <span style="text-wrap:pretty">Motivo: {{ cur.retorno.motivo }}{{ cur.retorno.obsSep }}{{ cur.retorno.obs }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showSuggest }}" hint-placeholder-val="{{ true }}">
+            <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;overflow:hidden">
+              <div style="padding:16px 18px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+                <h2 style="margin:0;font-size:15px;font-weight:600">Terapeutas sugeridos</h2>
+                <span style="font-size:13px;color:#56625C">Escolha um. Nada é registrado até você confirmar.</span>
+              </div>
+              <sc-for list="{{ suggestions }}" as="sg" hint-placeholder-count="3">
+                <button onClick="{{ sg.pick }}" style="width:100%;display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border:0;border-bottom:1px solid #EEF2F0;background:{{ sg.bg }};text-align:left;cursor:pointer;color:#16201C">
+                  <span style="flex:none;margin-top:2px;width:18px;height:18px;border-radius:9px;border:{{ sg.ring }};background:#FFFFFF"></span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                    <span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:15px;font-weight:600">{{ sg.name }}</span><span style="font-size:12px;color:#56625C">{{ sg.occLabel }}</span></span>
+                    <span style="font-size:12px;color:#56625C">{{ sg.publico }} · {{ sg.disp }}</span>
+                    <span style="font-size:13px;line-height:1.45;text-wrap:pretty">{{ sg.why }}</span>
+                  </span>
+                </button>
+              </sc-for>
+              <div style="padding:12px 18px;font-size:12px;color:#56625C;background:#F6F8F7">Fora da sugestão: Carlos Mendes (sem vagas) · Beatriz Nogueira (pausada)</div>
+              <div style="padding:14px 18px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #E7ECE9">
+                <button onClick="{{ confirm }}" style="border:0;background:{{ confirmBg }};color:#fff;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;cursor:pointer">{{ confirmLabel }}</button>
+              </div>
+            </section>
+          </sc-if>
+
+          
+
+          <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:14px">
+            <h2 style="margin:0;font-size:15px;font-weight:600">Dados do formulário</h2>
+            <div style="display:grid;grid-template-columns:140px minmax(0,1fr);gap:10px 16px;font-size:13px">
+              <sc-for list="{{ cur.fields }}" as="f" hint-placeholder-count="7">
+                <span style="color:#56625C">{{ f.k }}</span><span style="color:{{ f.color }};text-wrap:pretty">{{ f.v }}</span>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+
+        <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px">
+          <h2 style="margin:0 0 10px;font-size:15px;font-weight:600">Linha do tempo</h2>
+          <sc-for list="{{ timeline }}" as="st" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:18px minmax(0,1fr);gap:12px">
+              <div style="display:flex;flex-direction:column;align-items:center">
+                <span style="flex:none;width:12px;height:12px;border-radius:6px;margin-top:3px;background:{{ st.dotBg }};border:2px solid {{ st.dotBorder }}"></span>
+                <span style="flex:1;width:1px;background:#DCE3DF;min-height:26px"></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;padding-bottom:16px">
+                <span style="font-size:14px;font-weight:{{ st.weight }};color:{{ st.color }}">{{ st.label }}</span>
+                <span style="font-size:12px;color:#56625C">{{ st.date }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isTherapists }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-weight:700;font-size:28px;letter-spacing:-0.02em">Terapeutas</h1>
+          <span style="font-size:13px;color:#56625C">{{ freeTotal }} vagas livres · {{ waitingCount }} pessoas aguardando</span>
+        </div>
+        <button onClick="{{ openTher }}" style="flex:none;border:0;background:#1C6A4C;color:#fff;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;cursor:pointer">Cadastrar terapeuta</button>
+      </header>
+      <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;overflow-x:auto">
+        <div style="min-width:720px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.1fr) 150px minmax(0,1.5fr) 90px;gap:16px;padding:12px 18px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#56625C;border-bottom:1px solid #E7ECE9">
+          <span style="white-space:nowrap">Terapeuta</span><span style="white-space:nowrap">Disponibilidade</span><span style="white-space:nowrap">Vagas</span><span style="white-space:nowrap">Em atendimento</span><span style="white-space:nowrap">Status</span>
+        </div>
+        <sc-for list="{{ therapists }}" as="t" hint-placeholder-count="5">
+          <div style="min-width:720px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.1fr) 150px minmax(0,1.5fr) 90px;gap:16px;padding:14px 18px;font-size:13px;border-bottom:1px solid #EEF2F0;align-items:center">
+            <span style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:500;font-size:14px">{{ t.name }}</span><span style="color:#56625C;font-size:12px">{{ t.publico }}</span></span>
+            <span style="color:#56625C">{{ t.disp }}</span>
+            <span style="display:flex;flex-direction:column;gap:5px"><span>{{ t.occLabel }}</span><span style="height:5px;border-radius:3px;background:#E7ECE9;overflow:hidden"><span style="display:block;height:100%;width:{{ t.pct }};background:{{ t.bar }}"></span></span></span>
+            <span style="color:#56625C;text-wrap:pretty">{{ t.patients }}</span>
+            <span style="justify-self:start;font-size:12px;padding:3px 9px;border-radius:999px;background:{{ t.stBg }};color:{{ t.stColor }}">{{ t.statusLabel }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-weight:700;font-size:28px;letter-spacing:-0.02em">Usuários</h1>
+          <span style="font-size:13px;color:#56625C">Pessoas cadastradas têm acesso completo ao painel.</span>
+        </div>
+        <button onClick="{{ openInvite }}" style="flex:none;border:0;background:#1C6A4C;color:#fff;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;cursor:pointer">Cadastrar usuário</button>
+      </header>
+
+      <section style="background:#FFFFFF;border:1px solid #DCE3DF;border-radius:12px;overflow-x:auto">
+        <div style="min-width:520px;display:grid;grid-template-columns:minmax(0,1.6fr) 140px 130px;gap:16px;padding:12px 18px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#56625C;border-bottom:1px solid #E7ECE9">
+          <span style="white-space:nowrap">Usuário</span><span style="white-space:nowrap">Último acesso</span><span style="white-space:nowrap">Situação</span>
+        </div>
+        <sc-for list="{{ users }}" as="u" hint-placeholder-count="6">
+          <div style="min-width:520px;display:grid;grid-template-columns:minmax(0,1.6fr) 140px 130px;gap:16px;padding:12px 18px;font-size:13px;border-bottom:1px solid #EEF2F0;align-items:center">
+            <span style="display:flex;align-items:center;gap:10px;min-width:0">
+              <span style="flex:none;width:32px;height:32px;border-radius:16px;background:#E1EFE8;color:#124D37;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ u.initials }}</span>
+              <span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500;font-size:14px">{{ u.name }}</span><span style="color:#56625C;font-size:12px;overflow:hidden;text-overflow:ellipsis">{{ u.email }}</span></span>
+            </span>
+            <span style="color:#56625C">{{ u.last }}</span>
+            <span style="justify-self:start;font-size:12px;padding:3px 9px;border-radius:999px;white-space:nowrap;background:{{ u.stBg }};color:{{ u.stColor }}">{{ u.status }}</span>
+          </div>
+        </sc-for>
+      </section>
+      <div style="font-size:12px;color:#56625C">Todo acesso a dados de pessoas atendidas fica registrado.</div>
+    </div>
+  </sc-if>
+</main>
+
+
+</div>
+
+<sc-if value="{{ retOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeRet }}" style="position:fixed;inset:0;background:rgba(22,32,28,0.35);display:flex;align-items:center;justify-content:center;padding:40px;z-index:10">
+    <div onClick="{{ stop }}" style="width:540px;max-width:100%;max-height:100%;overflow-y:auto;background:#FFFFFF;border-radius:14px;box-shadow:0 20px 60px rgba(22,32,28,0.25);display:flex;flex-direction:column">
+      <div style="padding:18px 22px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:20px;font-weight:700">Retornar para escolha de terapeuta</div>
+        <div style="font-size:13px;color:#56625C">{{ cur.name }} sai do atendimento com {{ cur.ter }} e a vaga é liberada.</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;font-size:13px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-weight:500">Motivo do retorno</span>
+          <sc-for list="{{ retOpts }}" as="ro" hint-placeholder-count="5">
+            <button onClick="{{ ro.pick }}" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid {{ ro.border }};background:{{ ro.bg }};border-radius:10px;text-align:left;cursor:pointer;color:#16201C;font-size:14px">
+              <span style="flex:none;width:16px;height:16px;border-radius:8px;border:{{ ro.ring }};background:#FFFFFF"></span>{{ ro.label }}
+            </button>
+          </sc-for>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Observações (opcional)</span><textarea value="{{ ret.obs }}" onChange="{{ setRetObs }}" rows="3" placeholder="Detalhes que ajudem na nova escolha" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%;resize:vertical;line-height:1.5"></textarea></label>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid #E7ECE9;display:flex;justify-content:flex-end;gap:8px">
+        <button onClick="{{ closeRet }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:9px 14px;border-radius:8px;cursor:pointer;color:#16201C">Cancelar</button>
+        <button onClick="{{ doRet }}" style="border:0;background:{{ retBg }};color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer">Confirmar retorno</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ welcomeOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeWelcome }}" style="position:fixed;inset:0;background:rgba(22,32,28,0.35);display:flex;align-items:center;justify-content:center;padding:40px;z-index:10">
+    <div onClick="{{ stop }}" style="width:640px;max-width:100%;max-height:100%;overflow-y:auto;background:#FFFFFF;border-radius:14px;box-shadow:0 20px 60px rgba(22,32,28,0.25);display:flex;flex-direction:column">
+      <div style="padding:18px 22px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:12px;color:#56625C">Mensagem pré-definida · edite se quiser antes de enviar</div>
+        <div style="font-size:20px;font-weight:700">Boas-vindas e termo de compromisso</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;font-size:13px">
+        <div style="display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px 12px;align-items:center">
+          <span style="color:#56625C">Para</span><span style="font-size:14px">{{ welcome.to }}</span>
+          <span style="color:#56625C">Assunto</span><input value="{{ welcome.subject }}" onChange="{{ setWSubject }}" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%">
+        </div>
+        <textarea value="{{ welcome.body }}" onChange="{{ setWBody }}" rows="14" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%;line-height:1.6;resize:vertical"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F6F8F7;border-radius:8px">
+          <span style="flex:1;font-size:12px;color:#56625C">O link <strong style="color:#16201C">[Assinar termo de compromisso]</strong> é inserido automaticamente e é individual para esta pessoa.</span>
+          <a href="Termo de Compromisso.dc.html" target="_blank" style="flex:none;font-size:13px;font-weight:500">Ver termo ↗</a>
+        </div>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid #E7ECE9;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <button onClick="{{ resetWelcome }}" style="border:0;background:none;font-size:13px;color:#56625C;cursor:pointer;padding:0">Restaurar texto padrão</button>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ closeWelcome }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:9px 14px;border-radius:8px;cursor:pointer;color:#16201C">Cancelar</button>
+          <button onClick="{{ sendWelcome }}" style="border:0;background:#1C6A4C;color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer">Enviar e-mail</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ therOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeTher }}" style="position:fixed;inset:0;background:rgba(22,32,28,0.35);display:flex;align-items:center;justify-content:center;padding:40px;z-index:10">
+    <div onClick="{{ stop }}" style="width:560px;max-width:100%;max-height:100%;overflow-y:auto;background:#FFFFFF;border-radius:14px;box-shadow:0 20px 60px rgba(22,32,28,0.25);display:flex;flex-direction:column">
+      <div style="padding:18px 22px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:20px;font-weight:700">Cadastrar terapeuta</div>
+        <div style="font-size:13px;color:#56625C">Será adicionado à planilha de terapeutas e entra nas sugestões de encaminhamento.</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:16px;font-size:13px">
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Nome completo</span><input value="{{ tf.name }}" onChange="{{ tfName }}" placeholder="Ex.: Paula Mendes" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%"></label>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">E-mail</span><input value="{{ tf.email }}" onChange="{{ tfEmail }}" placeholder="nome@email.com" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%"></label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-weight:500">Público atendido</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{ publicoOpts }}" as="po" hint-placeholder-count="3">
+              <button onClick="{{ po.toggle }}" style="border:1px solid {{ po.border }};background:{{ po.bg }};color:{{ po.color }};border-radius:999px;font-size:13px;font-weight:500;padding:7px 14px;cursor:pointer">{{ po.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Disponibilidade</span><input value="{{ tf.disp }}" onChange="{{ tfDisp }}" placeholder="Ex.: Ter e Qui, noite" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;width:100%"></label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-weight:500">Vagas</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onClick="{{ capDown }}" style="width:40px;height:40px;border:1px solid #C9D2CD;background:#FFFFFF;border-radius:8px;font-size:18px;cursor:pointer;color:#16201C">−</button>
+            <span style="min-width:40px;text-align:center;font-size:16px;font-weight:600">{{ tf.cap }}</span>
+            <button onClick="{{ capUp }}" style="width:40px;height:40px;border:1px solid #C9D2CD;background:#FFFFFF;border-radius:8px;font-size:18px;cursor:pointer;color:#16201C">+</button>
+            <span style="font-size:12px;color:#56625C">pessoas atendidas ao mesmo tempo</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid #E7ECE9;display:flex;justify-content:flex-end;gap:8px">
+        <button onClick="{{ closeTher }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:9px 14px;border-radius:8px;cursor:pointer;color:#16201C">Cancelar</button>
+        <button onClick="{{ saveTher }}" style="border:0;background:{{ therBg }};color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ inviteOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeInvite }}" style="position:fixed;inset:0;background:rgba(22,32,28,0.35);display:flex;align-items:center;justify-content:center;padding:40px;z-index:10">
+    <div onClick="{{ stop }}" style="width:560px;max-width:100%;max-height:100%;overflow-y:auto;background:#FFFFFF;border-radius:14px;box-shadow:0 20px 60px rgba(22,32,28,0.25);display:flex;flex-direction:column">
+      <div style="padding:18px 22px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:20px;font-weight:700">Cadastrar usuário</div>
+        <div style="font-size:13px;color:#56625C">A pessoa recebe um convite por e-mail para criar a senha.</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:16px;font-size:13px">
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Nome completo</span><input value="{{ form.name }}" onChange="{{ setName }}" placeholder="Ex.: Joana Martins" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C"></label>
+        <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">E-mail</span><input value="{{ form.email }}" onChange="{{ setEmail }}" placeholder="nome@email.com" style="font:inherit;font-size:14px;padding:10px 12px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C"></label>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid #E7ECE9;display:flex;justify-content:flex-end;gap:8px">
+        <button onClick="{{ closeInvite }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:9px 14px;border-radius:8px;cursor:pointer;color:#16201C">Cancelar</button>
+        <button onClick="{{ sendInvite }}" style="border:0;background:{{ inviteBg }};color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer">Enviar convite</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(22,32,28,0.35);display:flex;align-items:center;justify-content:center;padding:40px;z-index:10">
+    <div onClick="{{ stop }}" style="width:640px;max-width:100%;max-height:100%;overflow-y:auto;background:#FFFFFF;border-radius:14px;box-shadow:0 20px 60px rgba(22,32,28,0.25);display:flex;flex-direction:column">
+      <div style="padding:18px 22px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:12px;color:#56625C">Pré-visualização · confira antes de enviar</div>
+        <div style="font-size:20px;font-weight:700">{{ modal.title }}</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:12px;font-size:13px">
+        <div style="display:grid;grid-template-columns:60px minmax(0,1fr);gap:6px 12px;color:#56625C"><span>Para</span><span style="color:#16201C">{{ modal.to }}</span><span>Assunto</span><span style="color:#16201C">{{ modal.subject }}</span></div>
+        <sc-if value="{{ modal.isFicha }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #E7ECE9;border-radius:10px;padding:14px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px 14px">
+            <sc-for list="{{ cur.fields }}" as="f" hint-placeholder-count="7"><span style="color:#56625C">{{ f.k }}</span><span style="color:{{ f.color }}">{{ f.v }}</span></sc-for>
+          </div>
+        </sc-if>
+        <div style="white-space:pre-line;line-height:1.6;text-wrap:pretty;color:#56625C;font-size:12px">{{ modal.body }}</div>
+        <sc-if value="{{ modal.isGerar }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;border:1px solid #E7ECE9;border-radius:10px;padding:14px 16px;background:#F6F8F7">
+            <div style="font-size:14px;font-weight:600">Termo de orientação ao terapeuta</div>
+            <sc-for list="{{ modal.orient }}" as="o" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;line-height:1.5"><span style="font-weight:700;color:#1C6A4C">{{ o.n }}</span><span style="text-wrap:pretty">{{ o.t }}</span></div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid #E7ECE9;display:flex;justify-content:flex-end;gap:8px">
+        <button onClick="{{ closeModal }}" style="border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:9px 14px;border-radius:8px;cursor:pointer;color:#16201C">{{ modal.secondary }}</button>
+        <button onClick="{{ sendModal }}" style="border:0;background:#1C6A4C;color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer">{{ modal.cta }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ST = [
+  {k:'acolhimento', label:'Em acolhimento', short:'Acolhimento', dot:'#3E8A9A'},
+  {k:'escolha', label:'Aguardando escolha de terapeuta', short:'Escolha de terapeuta', dot:'#C28A2C'},
+  {k:'atendimento', label:'Em atendimento', short:'Em atendimento', dot:'#5E8C6A'},
+  {k:'desligado', label:'Desligado', short:'Desligado', dot:'#97A19D'},
+  {k:'pendente', label:'Pendente / com problema', short:'Pendente', dot:'#B5533C'},
+];
+const TH = [
+  {id:'ana', name:'Ana Ribeiro', abord:'TCC', publico:'Adultos', disp:'Seg e Qua, noite', cap:5, pts:['Fernanda Costa','Lucas Batista','Camila Rocha'], active:true},
+  {id:'carlos', name:'Carlos Mendes', abord:'Psicanálise', publico:'Adultos e adolescentes', disp:'Ter e Qui, manhã', cap:4, pts:['Roberto Silva','Marcos Paiva','Elisa Dantas','Rui Campos'], active:true},
+  {id:'juliana', name:'Juliana Prado', abord:'Gestalt', publico:'Crianças e adolescentes', disp:'Sáb, manhã', cap:3, pts:['Davi Reis'], active:true},
+  {id:'rafael', name:'Rafael Torres', abord:'ACT', publico:'Adultos', disp:'Seg a Sex, tarde', cap:4, pts:['Tiago Moura','Nina Araújo'], active:true},
+  {id:'beatriz', name:'Beatriz Nogueira', abord:'Humanista', publico:'Adultos', disp:'Qua e Sex, noite', cap:3, pts:[], active:false},
+];
+const CASES = [
+  {id:'c12', name:'Gabriel Nunes', age:27, email:'gabriel.nunes@email.com', phone:'(11) 99412-3380', motivo:'Crises de pânico no transporte', disp:'Ter e Qui à noite', publico:'Adulto', abord:'', status:'acolhimento', days:1, ter:'', recv:'06/10 · 20:15'},
+  {id:'c13', name:'Renata Oliveira', age:48, email:'renata.o@email.com', phone:'(21) 98733-1029', motivo:'Cuidadora da mãe; exaustão', disp:'Manhãs', publico:'Adulto', abord:'', status:'acolhimento', days:0, ter:'', recv:'07/10 · 08:05'},
+  {id:'c11', name:'Sofia Martins', age:19, email:'sofia.m@email.com', phone:'(11) 98812-4410', motivo:'Tristeza constante; menciona pensamentos de se machucar', disp:'Qualquer dia, tarde', publico:'Adulto', abord:'', status:'pendente', days:0, ter:'', risk:true, recv:'07/10 · 07:58'},
+  {id:'c3', name:'Luiza Fernandes', age:28, email:'luiza.fernandes@email.com', phone:'(11) 99231-0087', motivo:'Luto recente e dificuldade para dormir', disp:'Seg e Qua à noite; Sex à tarde', publico:'Adulto', abord:'', status:'escolha', days:2, ter:'', recv:'05/10 · 14:20'},
+  {id:'c1', name:'Mariana Alves', age:34, email:'mari.alves@email.com', phone:'(21) 98100-2231', motivo:'Ansiedade relacionada ao trabalho', disp:'Seg e Qua à noite', publico:'Adulto', abord:'TCC', status:'escolha', days:1, ter:'', recv:'06/10 · 09:12'},
+  {id:'c2', name:'Pedro Lima', age:16, email:'responsavel.lima@email.com', phone:'(11) 97654-0012', motivo:'Dificuldades na escola e isolamento', disp:'Sáb de manhã', publico:'Adolescente', abord:'', status:'escolha', days:1, ter:'', recv:'06/10 · 18:40'},
+  {id:'c10', name:'J. S.', age:'?', email:'js@@email', phone:'', motivo:'Conflitos familiares', disp:'Não informado', publico:'Adulto', abord:'', status:'pendente', days:3, ter:'', recv:'04/10 · 11:05', issue:'E-mail inválido e telefone ausente'},
+  {id:'c4', name:'Roberto Silva', age:52, email:'roberto.s@email.com', phone:'(11) 99001-7788', motivo:'Estresse após perda de emprego', disp:'Ter e Qui de manhã', publico:'Adulto', abord:'Psicanálise', status:'atendimento', days:9, ter:'Carlos Mendes', termoOk:false, repasseOk:false, stalled:'Termo não assinado há 9 dias', recv:'24/09 · 10:00'},
+  {id:'c5', name:'Camila Rocha', age:41, email:'camila.rocha@email.com', phone:'(31) 98777-5520', motivo:'Crises de ansiedade', disp:'Seg à noite', publico:'Adulto', abord:'', status:'atendimento', termoOk:false, repasseOk:false, days:2, ter:'Ana Ribeiro', recv:'01/10 · 16:30'},
+  {id:'c6', name:'Tiago Moura', age:23, email:'tiago.moura@email.com', phone:'(11) 96543-2109', motivo:'Baixa autoestima', disp:'Tardes', publico:'Adulto', abord:'ACT', termoOk:true, repasseOk:false, status:'atendimento', days:7, ter:'Rafael Torres', stalled:'Terapeuta não confirmou 1º atendimento (7 dias)', recv:'20/09 · 08:15'},
+  {id:'c7', name:'Fernanda Costa', age:37, email:'fe.costa@email.com', phone:'(11) 98888-1200', motivo:'Relacionamento abusivo encerrado', disp:'Qua à noite', publico:'Adulto', abord:'TCC', termoOk:true, repasseOk:true, status:'atendimento', days:41, ter:'Ana Ribeiro', recv:'12/08 · 13:00'},
+  {id:'c8', name:'Lucas Batista', age:30, email:'lucas.b@email.com', phone:'(11) 97777-3434', motivo:'Ansiedade social', disp:'Seg à noite', publico:'Adulto', abord:'', termoOk:true, repasseOk:false, status:'atendimento', days:22, ter:'Ana Ribeiro', recv:'02/09 · 19:45'},
+  {id:'c9', name:'Helena Duarte', age:45, email:'helena.d@email.com', phone:'(21) 96666-9090', motivo:'Burnout', disp:'Manhãs', publico:'Adulto', abord:'', status:'desligado', days:15, ter:'Carlos Mendes', recv:'03/06 · 10:30', motivoDeslig:'Alta'},
+];
+const SUG = [
+  {id:'ana', why:'Atende às segundas e quartas à noite, igual à disponibilidade dela. 2 vagas livres. Atende adultos.'},
+  {id:'rafael', why:'Compatível com sexta à tarde. 2 vagas livres. Experiência com luto informada no cadastro.'},
+];
+const NI = 'Não informado';
+const welcomeTpl = c => ({to:c.email, subject:'Bem-vindo(a) ao Projeto Florescer', body:`Olá, ${c.name.split(' ')[0]}.
+
+Que bom ter você com a gente. Recebemos seu pedido de acompanhamento e queremos que você se sinta acolhido(a) desde já.
+
+Antes de seguirmos para a escolha do(a) terapeuta, pedimos que leia e aceite o nosso termo de compromisso. Ele explica como funcionam os atendimentos, o sigilo e o que esperamos de cada parte. Leva poucos minutos:
+
+[Assinar termo de compromisso]
+
+Em breve entraremos em contato para uma conversa inicial. Se tiver qualquer dúvida, é só responder a este e-mail.
+
+Com carinho,
+Equipe Projeto Florescer`});
+const USERS = [
+  {name:'Cláudia Ramos', email:'claudia@florescer.org', last:'Hoje, 08:40', status:'ativo'},
+  {name:'Henrique Sá', email:'henrique@florescer.org', last:'Ontem, 17:12', status:'ativo'},
+  {name:'Marta Lopes', email:'marta@florescer.org', last:'05/10', status:'ativo'},
+  {name:'Diego Farias', email:'diego@florescer.org', last:'—', status:'convite'},
+  {name:'Patrícia Gomes', email:'patricia@florescer.org', last:'14/08', status:'inativo'},
+];
+
+class Component extends DCLogic {
+  state = { ret:null, welcome:null, sentWelcome:{}, therOpen:false, tf:{name:'',email:'',publico:[],disp:'',cap:3}, users:USERS, inviteOpen:false, form:{name:'', email:''}, screen:'overview', caseId:'c3', chosen:'ana', cases:CASES, ther:TH, modal:null, sentTermo:{}, sentFicha:{},
+    messages:[
+      {time:'Hoje · 07:59', alert:'Sofia Martins: o formulário menciona risco. Fluxo normal pausado — aguardo sua orientação.'},
+      {time:'Hoje · 08:42', done:'3 novas solicitações verificadas. Luiza Fernandes e Mariana Alves com dados completos.', pending:'Escolher terapeuta para 3 pessoas. J. S. tem e-mail inválido e sem telefone.', alert:'Roberto Silva sem assinar o termo há 9 dias. Tiago Moura sem 1º atendimento confirmado há 7 dias.'},
+    ]};
+
+  say(m){ this.setState(s=>({messages:[...s.messages, {time:'Hoje · agora', ...m}]})); }
+  open(id){ this.setState({screen:'detail', caseId:id}); }
+  thOcc(t){ return t.pts.length; }
+
+  renderVals(){
+    const s = this.state, st = k => ST.find(x=>x.k===k);
+    const cases = s.cases, cur0 = cases.find(c=>c.id===s.caseId);
+    const counts = {}; ST.forEach(x=>counts[x.k]=cases.filter(c=>c.status===x.k).length);
+    const go = scr => () => this.setState({screen:scr});
+    const nav = [['overview','Visão geral',''],['cases','Casos',cases.length],['therapists','Terapeutas',s.ther.length],['users','Usuários',s.users.length]].map(([k,l,c])=>{
+      const a = s.screen===k || (k==='cases' && s.screen==='detail');
+      return {label:l, count:c, go:go(k), bg:a?'#E1EFE8':'transparent', weight:a?600:400};
+    });
+    const therapists = s.ther.map(t=>{
+      const o=this.thOcc(t), full=o>=t.cap;
+      return {...t, occLabel:`${o} de ${t.cap}`, pct:`${Math.round(o/t.cap*100)}%`, bar:!t.active?'#B7C1BC':full?'#B5533C':'#5E8C6A',
+        patients:t.pts.length?t.pts.join(', '):'—', statusLabel:t.active?'Ativo':'Pausado', stBg:t.active?'#E1EFE8':'#E7ECE9', stColor:t.active?'#124D37':'#56625C', free:t.active?Math.max(0,t.cap-o):0};
+    });
+    const freeTotal = therapists.reduce((a,t)=>a+t.free,0);
+    const risk = cases.find(c=>c.risk);
+    const decisions = [];
+    cases.filter(c=>c.status==='acolhimento').forEach(c=>decisions.push({name:c.name, text:`Em acolhimento · há ${c.days} dia${c.days===1?'':'s'}`, cta:'Abrir caso', dot:st('acolhimento').dot, open:()=>this.open(c.id)}));
+    cases.filter(c=>c.status==='escolha').forEach(c=>decisions.push({name:c.name, text:`Aguardando escolha de terapeuta · há ${c.days} dia${c.days>1?'s':''}`, cta:'Ver sugestões', dot:st('escolha').dot, open:()=>this.open(c.id)}));
+    cases.filter(c=>c.stalled).forEach(c=>decisions.push({name:c.name, text:c.stalled, cta:'Enviar lembrete', dot:'#C28A2C', open:()=>this.say({done:`Lembrete preparado para ${c.stalled.startsWith('Termo')?c.name:c.ter}.`, pending:'Confira o texto antes do envio.'})}));
+    cases.filter(c=>c.issue).forEach(c=>decisions.push({name:c.name, text:c.issue, cta:'Revisar dados', dot:st('pendente').dot, open:()=>this.open(c.id)}));
+
+    const daysInfo = c => ({daysLabel: c.stalled?`Parado há ${c.days} dias`:c.risk?'Risco — prioridade':`${c.days} dia${c.days===1?'':'s'} no status`, daysColor:(c.stalled||c.risk)?'#A6402B':'#56625C', daysWeight:(c.stalled||c.risk)?600:400, border:c.risk?'#E6B7A9':c.stalled?'#E8CFA0':'#DCE3DF'});
+    const pill = ok => ok?['#E1EFE8','#124D37']:['#F6EBD3','#7A4E0E'];
+    const chk = c => { const t=pill(c.termoOk), r=pill(c.repasseOk); return {hasChecks:c.status==='atendimento', tLabel:c.termoOk?'Termo ✓':'Termo pendente', tBg:t[0], tColor:t[1], rLabel:c.repasseOk?'Repasse ✓':'Repasse pendente', rBg:r[0], rColor:r[1]}; };
+    const columns = ST.map(x=>({...x, count:counts[x.k], items:cases.filter(c=>c.status===x.k).map(c=>({...c, terLabel:c.ter||'sem terapeuta', ...daysInfo(c), ...chk(c), open:()=>this.open(c.id)}))}));
+
+    const idx = ST.findIndex(x=>x.k===cur0.status);
+    const v = (x)=>({v:x||NI, color:x?'#16201C':'#A6402B'});
+    const cur = {...cur0, statusLabel:st(cur0.status).label, dot:st(cur0.status).dot, terLabel:cur0.ter||'terapeuta',
+      fields:[{k:'Nome',...v(cur0.name)},{k:'Idade',...v(cur0.age==='?'?'':String(cur0.age))},{k:'E-mail',...v(cur0.email)},{k:'Telefone',...v(cur0.phone)},{k:'Motivo',...v(cur0.motivo)},{k:'Disponibilidade',...v(cur0.disp==='Não informado'?'':cur0.disp)},{k:'Público',...v(cur0.publico)},{k:'Abordagem preferida',...v(cur0.abord)}]};
+    const fi = {acolhimento:0, escolha:1, atendimento:3, desligado:5}[cur0.status] ?? -1;
+    const steps = [
+      ['Solicitação recebida', cur0.recv],
+      ['Acolhimento', fi>0?'conversa inicial realizada':'aguardando conversa inicial'],
+      ['Terapeuta escolhido', cur0.ter?`${cur0.ter}`:'aguardando sua escolha'],
+      ['Ficha e termo de orientação enviados', cur0.ter?`a ${cur0.ter} · prazo de contato: 5 dias úteis`:'—'],
+      ['1º atendimento', '—'],
+      ['Desligamento', cur0.motivoDeslig?`Motivo: ${cur0.motivoDeslig}`:'—'],
+    ];
+    const timeline = steps.map(([label,date],i)=>{
+      const done = fi>=0 && i<=fi, now = fi>=0 && i===fi+1;
+      return {label, date, weight:now?600:400, color:(done||now)?'#16201C':'#7C8782', dotBg:done?'#1C6A4C':'#FFFFFF', dotBorder:done?'#1C6A4C':now?'#C28A2C':'#C9D2CD'};
+    });
+    if (cur0.retorno && cur0.status==='escolha') timeline.splice(2,0,{label:'Retorno à escolha de terapeuta', date:`saiu de ${cur0.retorno.de} · ${cur0.retorno.motivo}`, weight:600, color:'#7A4E0E', dotBg:'#C28A2C', dotBorder:'#C28A2C'});
+    if (cur0.status==='pendente') timeline.splice(1,0,{label:cur0.risk?'Menção de risco — fluxo pausado':'Dados incompletos', date:cur0.risk?'avise a pessoa responsável imediatamente':cur0.issue, weight:600, color:'#A6402B', dotBg:'#A6402B', dotBorder:'#A6402B'});
+
+    const suggestions = SUG.filter(g=>!(cur0.retorno && s.ther.find(x=>x.id===g.id)?.name===cur0.retorno.de)).map(g=>{ const t=therapists.find(x=>x.id===g.id); const on=s.chosen===g.id;
+      return {...t, why:g.why, bg:on?'#EEF6F2':'#FFFFFF', ring:on?'6px solid #1C6A4C':'1.5px solid #B7C1BC', pick:()=>this.setState({chosen:g.id})}; });
+    const chosenT = s.ther.find(t=>t.id===s.chosen);
+
+    const confirm = () => { if(chosenT) this.setState({modal:'gerar'}); };
+    const doGerar = () => {
+      this.setState(p=>({modal:null, cases:p.cases.map(c=>c.id===cur0.id?{...c,status:'atendimento',ter:chosenT.name,days:0}:c),
+        ther:p.ther.map(t=>t.id===chosenT.id?{...t,pts:[...t.pts,cur0.name]}:t)}));
+      this.say({done:`Planilhas atualizadas: ${cur0.name} → ${chosenT.name}. Data do encaminhamento: 07/10. Vagas de ${chosenT.name.split(' ')[0]}: ${this.thOcc(chosenT)+1} de ${chosenT.cap}.`, pending:'Enviar termo à pessoa e ficha ao terapeuta. Prévias prontas.'});
+    };
+
+    const first = cur0.name.split(' ')[0];
+    const ORIENT = ['Entre em contato com a pessoa em até 5 dias úteis e combine o primeiro atendimento.','Confirme a data do 1º atendimento respondendo a este e-mail.','Mantenha sigilo sobre todas as informações da ficha e das sessões.','Avise a coordenação sobre faltas recorrentes (3 seguidas sem aviso) ou sinais de risco.','Comunique qualquer encerramento — alta, desistência ou outro encaminhamento — para atualizarmos o registro.'];
+    const modal = s.modal==='gerar' && chosenT ? {title:'Ficha do paciente e termo de orientação', to:`${chosenT.name} · ${chosenT.email||chosenT.name.toLowerCase().split(' ').join('.')+'@email.com'}`, subject:`Novo encaminhamento: ${cur0.name}`, isFicha:true, isGerar:true, cta:`Enviar a ${chosenT.name.split(' ')[0]}`, secondary:'Voltar',
+      orient:ORIENT.map((t,i)=>({n:i+1, t})), body:'Campos em vermelho não foram respondidos no formulário.'}
+      : s.modal==='termo' ? {title:'Termo de compromisso', to:cur0.email, subject:'Seu atendimento no Projeto Florescer', isFicha:false, cta:'Aprovar e enviar', secondary:'Editar',
+      body:`Olá, ${first}.\n\nRecebemos seu pedido e já encontramos uma terapeuta para acompanhar você.\n\nAntes do primeiro encontro, pedimos que leia e assine o termo de compromisso no link abaixo. Leva poucos minutos.\n\n[Assinar termo]\n\nQualquer dúvida, é só responder a este e-mail. Estamos aqui.\n\nCom carinho,\nEquipe Projeto Florescer`}
+      : s.modal==='ficha' ? {title:'Ficha de encaminhamento', to:cur0.ter||'—', subject:`Novo encaminhamento: ${cur0.name}`, isFicha:true, cta:'Aprovar e enviar', secondary:'Editar',
+      body:`Por favor, entre em contato com ${first} em até 5 dias úteis e confirme a data do primeiro atendimento respondendo a este e-mail.\n\nCampos em vermelho não foram respondidos no formulário.`} : {};
+
+    const ST_U = {ativo:['Ativo','#E1EFE8','#124D37'], convite:['Convite enviado','#F6EBD3','#7A4E0E'], inactive:null, inativo:['Desativado','#E7ECE9','#56625C']};
+    const users = s.users.map(u=>({...u, initials:u.name.split(' ').map(w=>w[0]).slice(0,2).join(''), status:ST_U[u.status][0], stBg:ST_U[u.status][1], stColor:ST_U[u.status][2]}));
+    const f = s.form, setF = (k)=>e=>{const val=e.target.value; this.setState(p=>({form:{...p.form,[k]:val}}));};
+    const valid = f.name.trim() && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email);
+    const userVals = {
+      isUsers:s.screen==='users', users,
+      openInvite:()=>this.setState({inviteOpen:true, form:{name:'',email:''}}), closeInvite:()=>this.setState({inviteOpen:false}),
+      inviteOpen:s.inviteOpen, form:f, setName:setF('name'), setEmail:setF('email'),
+      inviteBg:valid?'#1C6A4C':'#B7C1BC',
+      sendInvite:()=>{ if(!valid) return; this.setState(p=>({inviteOpen:false, users:[...p.users,{name:f.name.trim(), email:f.email.trim(), last:'—', status:'convite'}]}));
+        this.say({done:`Convite enviado a ${f.name.trim()}.`, pending:'Acesso liberado quando a pessoa criar a senha.'}); },
+    };
+    const tf=s.tf, setT=(k)=>e=>{const val=e.target.value; this.setState(p=>({tf:{...p.tf,[k]:val}}));};
+    const tValid = tf.name.trim() && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(tf.email) && tf.publico.length && tf.disp.trim();
+    const PUB=['Crianças','Adolescentes','Adultos'];
+    const therVals = {
+      therOpen:s.therOpen, tf, tfName:setT('name'), tfEmail:setT('email'), tfDisp:setT('disp'),
+      openTher:()=>this.setState({therOpen:true, tf:{name:'',email:'',publico:[],disp:'',cap:3}}), closeTher:()=>this.setState({therOpen:false}),
+      capUp:()=>this.setState(p=>({tf:{...p.tf,cap:Math.min(15,p.tf.cap+1)}})), capDown:()=>this.setState(p=>({tf:{...p.tf,cap:Math.max(1,p.tf.cap-1)}})),
+      publicoOpts:PUB.map(l=>{const on=tf.publico.includes(l); return {label:l, bg:on?'#E1EFE8':'#FFFFFF', border:on?'#1C6A4C':'#C9D2CD', color:on?'#124D37':'#16201C',
+        toggle:()=>this.setState(p=>({tf:{...p.tf, publico:on?p.tf.publico.filter(x=>x!==l):PUB.filter(x=>x===l||p.tf.publico.includes(x))}}))};}),
+      therBg:tValid?'#1C6A4C':'#B7C1BC',
+      saveTher:()=>{ if(!tValid) return; const pub=tf.publico.length===1?tf.publico[0]:tf.publico.slice(0,-1).join(', ')+' e '+tf.publico[tf.publico.length-1].toLowerCase();
+        this.setState(p=>({therOpen:false, ther:[...p.ther,{id:'t'+Date.now(), name:tf.name.trim(), email:tf.email.trim(), publico:pub, disp:tf.disp.trim(), cap:tf.cap, pts:[], active:true}]})); },
+    };
+    return {
+      ...therVals,
+      ...userVals,
+      nav, isOverview:s.screen==='overview', isCases:s.screen==='cases', isDetail:s.screen==='detail', isTherapists:s.screen==='therapists',
+      hasRisk:!!risk, risk:risk?{name:risk.name, open:()=>this.open(risk.id)}:{},
+      decisionsCount:decisions.length, decisions,
+      statusTiles:ST.map(x=>({...x, count:counts[x.k], go:go('cases')})),
+      therapists, freeTotal, waitingCount:counts.escolha,
+      columns, casesTotal:cases.length, goCases:go('cases'),
+      cur, timeline, suggestions, showSuggest:cur0.status==='escolha', showAcolh:cur0.status==='acolhimento', showAtend:cur0.status==='atendimento', hasRetorno:cur0.status==='escolha' && !!cur0.retorno,
+      atendChecks:[['termoOk','Paciente assinou o termo de compromisso','Assinado','Aguardando assinatura'],['repasseOk','Terapeuta fez o repasse financeiro','Repasse recebido','Repasse pendente']].map(([k,label,yes,no])=>{const on=!!cur0[k]; return {label, note:on?yes:no, mark:on?'✓':'', boxBorder:on?'#1C6A4C':'#B7C1BC', boxBg:on?'#1C6A4C':'#FFFFFF', border:on?'#C5DDD1':'#E7ECE9', bg:on?'#F3F9F6':'#FFFFFF',
+        toggle:()=>this.setState(p=>({cases:p.cases.map(c=>c.id===cur0.id?{...c,[k]:!c[k], stalled:(k==='termoOk'&&!c[k])?undefined:c.stalled}:c)}))};}),
+      retOpen:!!s.ret, ret:s.ret||{}, openRet:()=>this.setState({ret:{motivo:'',obs:''}}), closeRet:()=>this.setState({ret:null}),
+      setRetObs:e=>{const v=e.target.value;this.setState(p=>({ret:{...p.ret,obs:v}}));},
+      retOpts:['Terapeuta sem disponibilidade','Incompatibilidade entre paciente e terapeuta','Paciente pediu troca de terapeuta','Terapeuta deixou o projeto','Outro'].map(l=>{const on=s.ret&&s.ret.motivo===l; return {label:l, bg:on?'#EEF6F2':'#FFFFFF', border:on?'#1C6A4C':'#DCE3DF', ring:on?'5px solid #1C6A4C':'1.5px solid #B7C1BC', pick:()=>this.setState(p=>({ret:{...p.ret,motivo:l}}))};}),
+      retBg:s.ret&&s.ret.motivo?'#1C6A4C':'#B7C1BC',
+      doRet:()=>{ if(!s.ret||!s.ret.motivo) return; const r={de:cur0.ter, motivo:s.ret.motivo, obs:s.ret.obs.trim(), obsSep:s.ret.obs.trim()?' — ':''};
+        this.setState(p=>({ret:null, chosen:null, cases:p.cases.map(c=>c.id===cur0.id?{...c,status:'escolha',ter:'',days:0,retorno:r,stalled:undefined}:c), ther:p.ther.map(t=>({...t,pts:t.pts.filter(n=>n!==cur0.name)}))})); },
+      welcomeDot:s.sentWelcome[cur0.id]?'#1C6A4C':'#C28A2C', welcomeNote:s.sentWelcome[cur0.id]?'Enviado hoje · aguardando aceite do termo':'Ainda não enviado', welcomeCta:s.sentWelcome[cur0.id]?'Reenviar':'Escrever e-mail',
+      welcomeOpen:!!s.welcome, welcome:s.welcome||{}, openWelcome:()=>this.setState({welcome:welcomeTpl(cur0)}), closeWelcome:()=>this.setState({welcome:null}),
+      resetWelcome:()=>this.setState({welcome:welcomeTpl(cur0)}),
+      setWSubject:e=>{const v=e.target.value;this.setState(p=>({welcome:{...p.welcome,subject:v}}));}, setWBody:e=>{const v=e.target.value;this.setState(p=>({welcome:{...p.welcome,body:v}}));},
+      sendWelcome:()=>this.setState(p=>({welcome:null, sentWelcome:{...p.sentWelcome,[cur0.id]:true}})), finishAcolh:()=>this.setState(p=>({cases:p.cases.map(c=>c.id===cur0.id?{...c,status:'escolha',days:0}:c)})),
+      confirm, confirmBg:chosenT?'#1C6A4C':'#B9B0A4', confirmLabel:chosenT?'Confirmar e gerar ficha':'Escolha um terapeuta',
+      termoNote:s.sentTermo[cur0.id]?'Enviado hoje · lembrete automático em 5 dias':'Prévia pronta para conferência', termoCta:s.sentTermo[cur0.id]?'Ver envio':'Revisar e-mail',
+      fichaNote:s.sentFicha[cur0.id]?'Enviada hoje · prazo de contato 5 dias úteis':'Preenchida a partir do formulário', fichaCta:s.sentFicha[cur0.id]?'Ver ficha':'Revisar ficha',
+      openTermo:()=>this.setState({modal:'termo'}), openFicha:()=>this.setState({modal:'ficha'}),
+      modalOpen:!!s.modal, modal, closeModal:()=>this.setState({modal:null}), stop:e=>e.stopPropagation(),
+      sendModal:()=>{ const k=s.modal; if(k==='gerar') return doGerar(); this.setState(p=>({modal:null, [k==='termo'?'sentTermo':'sentFicha']:{...p[k==='termo'?'sentTermo':'sentFicha'],[cur0.id]:true}}));
+        this.say(k==='termo'?{done:`Termo enviado a ${cur0.name}. Data de envio registrada.`, pending:'Aguardando assinatura. Aviso você se não houver resposta em 5 dias.'}:{done:`Ficha enviada a ${cur0.ter}. Status: Encaminhado ao terapeuta.`, pending:'Aguardando confirmação do 1º atendimento.'}); },
+      askSummary:()=>this.say({done:ST.map(x=>`${x.short}: ${counts[x.k]}`).join(' · '), pending:`${freeTotal} vagas livres: `+therapists.filter(t=>t.free).map(t=>`${t.name.split(' ')[0]} (${t.free})`).join(', '), alert:`${cases.filter(c=>c.stalled).length} casos parados.`}),
+      messages:s.messages.map(m=>({...m, hasDone:!!m.done, hasPending:!!m.pending, hasAlert:!!m.alert})),
+    };
+  }
+}
+</script>
+</body>
+</html>

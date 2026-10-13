@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Paleta da marca */
+  --creme: 250 243 213;       /* #FAF3D5 */
+  --areia: 213 206 177;       /* #D5CEB1 */
+  --caramelo: 188 151 107;    /* #BC976B */
+  --vinho: 143 20 63;         /* #8F143F */
+  --ameixa: 76 27 75;         /* #4C1B4B */
+  --bruma: 141 168 177;       /* #8DA8B1 */
+
+  /* Derivadas para interface */
+  --vinho-escuro: 112 14 48;
+  --vinho-suave: 247 233 238;
+  --vinho-claro: 233 205 215;
+  --ameixa-suave: 240 231 239;
+  --caramelo-suave: 246 236 220;
+  --caramelo-tinta: 110 74 28;
+  --bruma-escura: 86 124 137;
+  --terracota: 181 71 46;
+  --terracota-suave: 248 227 220;
+  --terracota-tinta: 138 47 24;
+
+  /* Neutros quentes */
+  --fundo: 247 243 232;
+  --superficie: 255 253 248;
+  --linha: 230 223 204;
+  --linha-suave: 239 233 218;
+  --linha-forte: 211 202 180;
+  --tinta: 43 26 38;
+  --tinta-suave: 111 97 104;
+  --tinta-apagada: 156 144 150;
+  --desativado: 207 198 178;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-fundo text-tinta font-sans; }
+  button, input, textarea { font: inherit; }
+  :focus-visible { outline: 2px solid rgb(var(--vinho)); outline-offset: 2px; }
+  /* Cormorant usa algarismos old-style por padrão; contagens pedem algarismos alinhados. */
+  .font-serif { font-variant-numeric: lining-nums; }
+  ::selection { background: rgb(var(--vinho-claro)); }
+}

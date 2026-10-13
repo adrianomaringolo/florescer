@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#F3F5F4;color:#16201C;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#1C6A4C}a:hover{color:#124D37}*{box-sizing:border-box}button,input{font-family:inherit}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 56px;gap:24px">
+  <header style="width:100%;max-width:720px;display:flex;align-items:center;gap:10px">
+    <div style="flex:none;width:32px;height:32px;border-radius:8px;background:#1C6A4C;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">F</div>
+    <div style="font-size:17px;font-weight:700;letter-spacing:-0.01em">Projeto Florescer</div>
+  </header>
+
+  <sc-if value="{{ notDone }}" hint-placeholder-val="{{ true }}">
+    <main style="width:100%;max-width:720px;background:#FFFFFF;border:1px solid #DCE3DF;border-radius:14px;display:flex;flex-direction:column">
+      <div style="padding:32px 36px 24px;border-bottom:1px solid #E7ECE9;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#56625C">Olá, Luiza</div>
+        <h1 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em">Termo de compromisso</h1>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:#56625C;text-wrap:pretty">Este termo explica como funciona o acompanhamento terapêutico oferecido pelo Projeto Florescer. Leia com calma — se algo não ficar claro, responda ao e-mail que recebemos e conversamos.</p>
+      </div>
+
+      <div style="padding:24px 36px;display:flex;flex-direction:column;gap:22px">
+        <sc-for list="{{ clauses }}" as="c" hint-placeholder-count="6">
+          <section style="display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px">
+            <span style="font-size:13px;font-weight:700;color:#1C6A4C;padding-top:2px">{{ c.n }}</span>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <h2 style="margin:0;font-size:16px;font-weight:600">{{ c.title }}</h2>
+              <p style="margin:0;font-size:14px;line-height:1.65;color:#2E3A35;text-wrap:pretty">{{ c.text }}</p>
+            </div>
+          </section>
+        </sc-for>
+        <div style="display:flex;flex-direction:column;gap:4px;padding:14px 16px;background:#F8E6E0;border-radius:10px">
+          <span style="font-size:14px;font-weight:600;color:#7A2C1C">Em caso de emergência</span>
+          <span style="font-size:14px;line-height:1.55;color:#7A2C1C">O projeto não oferece atendimento de urgência. Se precisar de ajuda imediata, ligue para o CVV (188) ou SAMU (192).</span>
+        </div>
+      </div>
+
+      <div style="padding:24px 36px 32px;border-top:1px solid #E7ECE9;display:flex;flex-direction:column;gap:16px;background:#FAFBFA;border-radius:0 0 14px 14px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+          <span style="font-weight:500">Nome completo</span>
+          <input value="{{ name }}" onChange="{{ setName }}" placeholder="Digite seu nome completo" style="font-size:15px;padding:12px 14px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;background:#FFFFFF">
+        </label>
+        <button onClick="{{ toggleMinor }}" style="display:flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font-size:14px;color:#16201C">
+          <span style="flex:none;width:20px;height:20px;border-radius:5px;border:1.5px solid {{ minorBorder }};background:{{ minorBg }};color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center">{{ minorMark }}</span>
+          Sou responsável legal por menor de idade
+        </button>
+        <sc-if value="{{ minor }}" hint-placeholder-val="{{ false }}">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+            <span style="font-weight:500">Nome da criança ou adolescente</span>
+            <input value="{{ minorName }}" onChange="{{ setMinorName }}" placeholder="Nome completo" style="font-size:15px;padding:12px 14px;border:1px solid #C9D2CD;border-radius:8px;color:#16201C;outline-color:#1C6A4C;background:#FFFFFF">
+          </label>
+        </sc-if>
+        <button onClick="{{ toggleAgree }}" style="display:flex;align-items:flex-start;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left;font-size:14px;line-height:1.5;color:#16201C">
+          <span style="flex:none;margin-top:1px;width:20px;height:20px;border-radius:5px;border:1.5px solid {{ agreeBorder }};background:{{ agreeBg }};color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center">{{ agreeMark }}</span>
+          Li e concordo com o termo de compromisso do Projeto Florescer.
+        </button>
+        <button onClick="{{ submit }}" style="align-self:flex-start;border:0;background:{{ submitBg }};color:#fff;font-size:15px;font-weight:600;padding:13px 22px;border-radius:8px;cursor:{{ submitCursor }}">Aceitar termo</button>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+    <main style="width:100%;max-width:560px;background:#FFFFFF;border:1px solid #DCE3DF;border-radius:14px;padding:40px 36px;display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+      <div style="width:44px;height:44px;border-radius:22px;background:#E1EFE8;color:#1C6A4C;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center">✓</div>
+      <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em">Termo aceito. Obrigado, {{ firstName }}.</h1>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#56625C;text-wrap:pretty">Enviamos uma cópia para o seu e-mail. Nossa equipe vai entrar em contato em breve para a conversa inicial.</p>
+      <div style="font-size:12px;color:#56625C">Aceito em {{ when }}</div>
+      <button onClick="{{ reset }}" style="margin-top:8px;border:1px solid #C9D2CD;background:#FFFFFF;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;cursor:pointer;color:#16201C">Ver o termo novamente</button>
+    </main>
+  </sc-if>
+
+  <footer style="font-size:12px;color:#56625C">Projeto Florescer · contato@florescer.org</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CLAUSES = [
+  ['Sobre o acompanhamento', 'Os atendimentos são gratuitos e realizados por terapeutas voluntários(as). Cada sessão dura cerca de 50 minutos, com frequência combinada entre você e seu(sua) terapeuta.'],
+  ['Sigilo', 'Tudo o que for conversado nas sessões é confidencial. O sigilo só pode ser quebrado em situações de risco à vida, conforme o código de ética profissional.'],
+  ['Seus dados', 'As informações do formulário são usadas apenas para organizar seu encaminhamento e ficam acessíveis somente à equipe do projeto e ao(à) terapeuta responsável.'],
+  ['Presença e faltas', 'Se não puder comparecer, avise com pelo menos 24 horas de antecedência. Três faltas seguidas sem aviso podem levar ao encerramento do acompanhamento, para que a vaga seja oferecida a outra pessoa.'],
+  ['Encerramento', 'Você pode encerrar o acompanhamento quando quiser, avisando o(a) terapeuta ou a equipe. O encerramento também pode acontecer por alta ou por indicação de outro tipo de cuidado.'],
+  ['Compromisso do projeto', 'Nos comprometemos a oferecer um espaço respeitoso, sem julgamentos, e a acompanhar seu caso até o encerramento.'],
+];
+class Component extends DCLogic {
+  state = { name:'', agree:false, minor:false, minorName:'', done:false, when:'' };
+  renderVals(){
+    const s=this.state, ok = s.name.trim().split(/\s+/).length>=2 && s.agree && (!s.minor || s.minorName.trim());
+    const box = on => ({b:on?'#1C6A4C':'#B7C1BC', bg:on?'#1C6A4C':'#FFFFFF', m:on?'✓':''});
+    const a=box(s.agree), m=box(s.minor);
+    return {
+      clauses:CLAUSES.map(([title,text],i)=>({n:String(i+1).padStart(2,'0'), title, text})),
+      notDone:!s.done, done:s.done, name:s.name, minor:s.minor, minorName:s.minorName,
+      setName:e=>this.setState({name:e.target.value}), setMinorName:e=>this.setState({minorName:e.target.value}),
+      toggleAgree:()=>this.setState({agree:!s.agree}), toggleMinor:()=>this.setState({minor:!s.minor}),
+      agreeBorder:a.b, agreeBg:a.bg, agreeMark:a.m, minorBorder:m.b, minorBg:m.bg, minorMark:m.m,
+      submitBg:ok?'#1C6A4C':'#B7C1BC', submitCursor:ok?'pointer':'not-allowed',
+      submit:()=>{ if(!ok) return; const d=new Date(); this.setState({done:true, when:d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}); window.scrollTo(0,0); },
+      firstName:s.name.trim().split(/\s+/)[0]||'', when:s.when,
+      reset:()=>this.setState({done:false, agree:false}),
+    };
+  }
+}
+</script>
+</body>
+</html>
