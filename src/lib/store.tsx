@@ -48,6 +48,8 @@ interface Painel extends DadosPainel {
   editarTerapeuta: (id: string, t: { name: string; email: string; genero: string; publico: Publico[]; disp: string; cap: number; active: boolean }) => Promise<boolean>;
   /** Sem senha, envia convite; com senha, cria o acesso com senha provisória. */
   cadastrarUsuario: (u: { name: string; email: string; senha?: string }) => Promise<boolean>;
+  redefinirSenha: (id: string, senha: string) => Promise<boolean>;
+  editarUsuario: (id: string, u: { name: string; email: string }) => Promise<boolean>;
   /** Cadastro manual de caso; devolve o id do caso criado. */
   cadastrarCaso: (c: Record<string, unknown>) => Promise<string | null>;
 }
@@ -137,6 +139,8 @@ export function PainelProvider({ children }: { children: React.ReactNode }) {
         return r?.ok ? (r.id ?? null) : null;
       },
       cadastrarUsuario: (u) => executar(() => acao("/api/usuarios", u)),
+      editarUsuario: (id, u) => executar(() => acao(`/api/usuarios/${id}`, u)),
+      redefinirSenha: (id, senha) => executar(() => acao(`/api/usuarios/${id}/senha`, { senha })),
     },
     [estado, ocupado, avisos, mostrar, dispensarAviso, executar, rodar],
   );

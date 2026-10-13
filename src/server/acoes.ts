@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, ne } from "drizzle-orm";
 import { db, schema } from "@/db";
 import {
   LINK_TERMO,
@@ -532,4 +532,47 @@ export async function trocarSenha(d: { atual: string; nova: string; confirmacao:
   await encerrarOutrasSessoes(u.id);
   await auditar(u.id, "senha_trocada");
   return { ok: true, mensagem: "Senha alterada." };
+}
+
+/** Define uma nova senha provisória para outra pessoa da equipe (esqueceu a senha ou o convite expirou). */
+export async function redefinirSenha(id: string, senha: string) {
+  return comUsuario(async (u) => {
+    if (id === u.id) return falha("Para mudar a sua própria senha, use Trocar senha.");
+    if (senha.length < SENHA_MINIMA) return falha(`A senha provisória precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);
+    const [alvo] = await db.select().from(schema.usuarios).where(eq(schema.usuarios.id, id));
+    if (!alvo) return falha("Usuário não encontrado.");
+    if (alvo.status === "inativo") return falha("Este acesso está desativado.");
+
+    // Um convite pendente vira acesso ativo; a pessoa sai de todos os aparelhos e cria a senha no próximo acesso.
+    await db
+      .update(schema.usuarios)
+      .set({ senhaHash: await gerarHash(senha), status: "ativo", trocarSenha: true, conviteToken: null, conviteExpira: null })
+      .where(eq(schema.usuarios.id, id));
+    await db.delete(schema.sessoes).where(eq(schema.sessoes.usuarioId, id));
+    await auditar(u.id, "senha_redefinida", undefined, alvo.email);
+    return { ok: true, mensagem: `Senha de ${alvo.nome} redefinida. Passe a senha provisória por um canal seguro.` };
+  });
+}
+
+/** Corrige nome e e-mail de alguém da equipe (inclusive de quem está logado). O e-mail é o login. */
+export async function editarUsuario(id: string, d: { name: string; email: string }) {
+  return comUsuario(async (u) => {
+    const nome = d.name.trim().replace(/\s+/g, " ");
+    const email = d.email.trim().toLowerCase();
+    if (!nome) return falha("Informe o nome.");
+    if (!emailValido(email)) return falha("E-mail inválido.");
+    const [alvo] = await db.select().from(schema.usuarios).where(eq(schema.usuarios.id, id));
+    if (!alvo) return falha("Usuário não encontrado.");
+    const [outro] = await db
+      .select({ id: schema.usuarios.id })
+      .from(schema.usuarios)
+      .where(and(eq(schema.usuarios.email, email), ne(schema.usuarios.id, id)));
+    if (outro) return falha("Já existe um usuário com este e-mail.");
+
+    const mudou = [nome !== alvo.nome && "nome", email !== alvo.email && `e-mail (${alvo.email} → ${email})`].filter(Boolean);
+    if (!mudou.length) return { ok: true, mensagem: "Nada mudou." };
+    await db.update(schema.usuarios).set({ nome, email }).where(eq(schema.usuarios.id, id));
+    await auditar(u.id, "usuario_editado", undefined, `${nome}: ${mudou.join(", ")}`);
+    return { ok: true, mensagem: id === u.id ? "Seus dados foram atualizados." : `Cadastro de ${nome} atualizado.` };
+  });
 }

@@ -30,7 +30,7 @@ export default function Login() {
           </div>
           <FormularioLogin />
           <div className="flex flex-col gap-2 border-t border-linha-suave pt-5 text-xs leading-relaxed text-tinta-suave">
-            <p>Esqueceu a senha? Peça a outra pessoa da equipe um novo convite.</p>
+            <p>Esqueceu a senha? Peça a outra pessoa da equipe para redefini-la na tela Usuários.</p>
             <p>
               Procura atendimento?{" "}
               <Link href="/solicitar" className="font-medium text-vinho underline-offset-2 hover:underline">

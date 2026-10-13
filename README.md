@@ -54,7 +54,11 @@ escolher). Use `pnpm db:seed -- --sem-exemplos` para criar só o usuário, sem c
     cria a senha e entra. Sem provedor de e-mail, o link aparece num aviso para copiar.
 - **Trocar senha**: `/trocar-senha`, pela barra lateral. Pede a senha atual (exceto quando a
   senha é provisória) e encerra as sessões nos outros aparelhos.
-- **Esqueci a senha**: ainda não há fluxo (fora do escopo, item 6).
+- **Editar usuário** (tela Usuários): corrige nome e e-mail, inclusive os próprios. O e-mail é o
+  login, então a troca vale a partir do próximo acesso; e-mails repetidos são recusados.
+- **Redefinir senha** (tela Usuários): outra pessoa da equipe define uma nova senha provisória;
+  quem esqueceu sai de todos os aparelhos e cria uma senha nova no próximo acesso. Também serve
+  para um convite pendente ou expirado. Não há recuperação por e-mail.
 - `src/middleware.ts` só barra quem não tem cookie; a validação real acontece em cada página
   e ação (`usuarioAtual` / `exigirUsuario`).
 

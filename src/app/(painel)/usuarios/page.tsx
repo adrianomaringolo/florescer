@@ -25,10 +25,36 @@ function gerarSenha() {
 
 type Forma = "convite" | "senha";
 
+function CampoSenhaProvisoria({ valor, aoMudar }: { valor: string; aoMudar: (v: string) => void }) {
+  return (
+    <div className="flex flex-col gap-1.5 text-[13px]">
+      <label htmlFor="senha-provisoria" className="font-medium">Senha provisória</label>
+      <span className="flex gap-2">
+        <input
+          id="senha-provisoria"
+          aria-describedby="senha-provisoria-ajuda"
+          className={`${inputClasse} min-w-0 flex-1 font-mono`}
+          value={valor}
+          onChange={(e) => aoMudar(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <Botao tamanho="sm" onClick={() => aoMudar(gerarSenha())}>Gerar outra</Botao>
+      </span>
+      <span id="senha-provisoria-ajuda" className={valor.length >= SENHA_MINIMA ? "text-xs text-tinta-suave" : "text-xs text-terracota-tinta"}>
+        Pelo menos {SENHA_MINIMA} caracteres. Anote antes de salvar e passe à pessoa por um canal seguro — ela não vai por e-mail.
+      </span>
+    </div>
+  );
+}
+
 const iniciais = (nome: string) => nome.split(" ").map((w) => w[0]).slice(0, 2).join("");
 
 export default function Usuarios() {
-  const { usuarios, cadastrarUsuario, ocupado } = usePainel();
+  const { usuarios, usuario, cadastrarUsuario, redefinirSenha, editarUsuario, ocupado } = usePainel();
+  const [edicao, setEdicao] = useState<{ id: string; name: string; email: string; emailAntes: string } | null>(null);
+  const edicaoValida = !!edicao && !!edicao.name.trim() && emailValido(edicao.email);
+  const [redefinir, setRedefinir] = useState<{ id: string; nome: string; senha: string } | null>(null);
   const [aberto, setAberto] = useState(false);
   const [f, setF] = useState({ name: "", email: "", forma: "senha" as Forma, senha: "" });
   const senhaOk = f.forma === "convite" || f.senha.length >= SENHA_MINIMA;
@@ -53,13 +79,13 @@ export default function Usuarios() {
       </header>
 
       <Cartao className="overflow-x-auto">
-        <div className="grid min-w-[520px] grid-cols-[minmax(0,1.6fr)_140px_130px] gap-4 border-b border-linha-suave px-[18px] py-3 text-[11px] uppercase tracking-[0.06em] text-tinta-suave">
-          <span>Usuário</span><span>Último acesso</span><span>Situação</span>
+        <div className="grid min-w-[720px] grid-cols-[minmax(0,1.6fr)_120px_130px_200px] gap-4 border-b border-linha-suave px-[18px] py-3 text-[11px] uppercase tracking-[0.06em] text-tinta-suave">
+          <span>Usuário</span><span>Último acesso</span><span>Situação</span><span className="sr-only">Ações</span>
         </div>
         {usuarios.map((u) => {
           const [rotulo, tom]: [string, Tom] = u.status === "ativo" && u.senhaProvisoria ? ["Senha provisória", "atencao"] : SITUACAO[u.status];
           return (
-            <div key={u.id} className="grid min-w-[520px] grid-cols-[minmax(0,1.6fr)_140px_130px] items-center gap-4 border-b border-linha-suave px-[18px] py-3 text-[13px] last:border-b-0">
+            <div key={u.id} className="grid min-w-[720px] grid-cols-[minmax(0,1.6fr)_120px_130px_200px] items-center gap-4 border-b border-linha-suave px-[18px] py-3 text-[13px] last:border-b-0">
               <span className="flex min-w-0 items-center gap-2.5">
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-vinho-suave text-xs font-bold text-vinho">{iniciais(u.name)}</span>
                 <span className="flex min-w-0 flex-col gap-px">
@@ -69,6 +95,14 @@ export default function Usuarios() {
               </span>
               <span className="text-tinta-suave">{u.last}</span>
               <Selo tom={tom} className="justify-self-start">{rotulo}</Selo>
+              <span className="flex items-center justify-end gap-2">
+                <Botao tamanho="sm" onClick={() => setEdicao({ id: u.id, name: u.name, email: u.email, emailAntes: u.email })}>Editar</Botao>
+                {u.id === usuario.id ? (
+                  <span className="w-[118px] text-center text-xs text-tinta-suave">Você</span>
+                ) : u.status !== "inativo" ? (
+                  <Botao tamanho="sm" onClick={() => setRedefinir({ id: u.id, nome: u.name, senha: gerarSenha() })}>Redefinir senha</Botao>
+                ) : null}
+              </span>
             </div>
           );
         })}
@@ -110,26 +144,60 @@ export default function Usuarios() {
             </span>
           </OpcaoRadio>
         </div>
-        {f.forma === "senha" && (
-          <div className="flex flex-col gap-1.5 text-[13px]">
-            <label htmlFor="senha-provisoria" className="font-medium">Senha provisória</label>
-            <span className="flex gap-2">
-              <input
-                id="senha-provisoria"
-                aria-describedby="senha-provisoria-ajuda"
-                className={`${inputClasse} min-w-0 flex-1 font-mono`}
-                value={f.senha}
-                onChange={(e) => setF({ ...f, senha: e.target.value })}
-                autoComplete="off"
-                spellCheck={false}
-              />
-              <Botao tamanho="sm" onClick={() => setF({ ...f, senha: gerarSenha() })}>Gerar outra</Botao>
-            </span>
-            <span id="senha-provisoria-ajuda" className={f.senha.length >= SENHA_MINIMA ? "text-xs text-tinta-suave" : "text-xs text-terracota-tinta"}>
-              Pelo menos {SENHA_MINIMA} caracteres. Anote antes de cadastrar e passe à pessoa por um canal seguro — ela não vai no e-mail.
-            </span>
-          </div>
+        {f.forma === "senha" && <CampoSenhaProvisoria valor={f.senha} aoMudar={(senha) => setF({ ...f, senha })} />}
+      </Modal>
+
+      <Modal
+        aberto={!!edicao}
+        aoFechar={() => setEdicao(null)}
+        titulo={edicao?.id === usuario.id ? "Editar meus dados" : "Editar usuário"}
+        rodape={
+          <>
+            <Botao tamanho="sm" onClick={() => setEdicao(null)}>Cancelar</Botao>
+            <Botao
+              variante="primario"
+              tamanho="sm"
+              disabled={!edicaoValida || ocupado}
+              onClick={async () => { if (edicao && (await editarUsuario(edicao.id, { name: edicao.name.trim(), email: edicao.email.trim() }))) setEdicao(null); }}
+            >
+              Salvar
+            </Botao>
+          </>
+        }
+      >
+        {edicao && (
+          <>
+            <Campo rotulo="Nome completo" value={edicao.name} onChange={(e) => setEdicao({ ...edicao, name: e.target.value })} />
+            <Campo rotulo="E-mail" type="email" value={edicao.email} onChange={(e) => setEdicao({ ...edicao, email: e.target.value })} />
+            {edicao.email.trim().toLowerCase() !== edicao.emailAntes && (
+              <p className="rounded-[10px] bg-caramelo-suave px-3.5 py-2.5 text-[13px] text-caramelo-tinta">
+                O e-mail é o login: {edicao.id === usuario.id ? "você vai entrar" : "a pessoa vai entrar"} com o endereço novo a partir de agora.
+              </p>
+            )}
+          </>
         )}
+      </Modal>
+
+      <Modal
+        aberto={!!redefinir}
+        aoFechar={() => setRedefinir(null)}
+        titulo="Redefinir senha"
+        descricao={redefinir ? `${redefinir.nome} sai de todos os aparelhos e, no próximo acesso, entra com esta senha provisória e cria uma nova.` : undefined}
+        rodape={
+          <>
+            <Botao tamanho="sm" onClick={() => setRedefinir(null)}>Cancelar</Botao>
+            <Botao
+              variante="primario"
+              tamanho="sm"
+              disabled={!redefinir || redefinir.senha.length < SENHA_MINIMA || ocupado}
+              onClick={async () => { if (redefinir && (await redefinirSenha(redefinir.id, redefinir.senha))) setRedefinir(null); }}
+            >
+              Redefinir senha
+            </Botao>
+          </>
+        }
+      >
+        {redefinir && <CampoSenhaProvisoria valor={redefinir.senha} aoMudar={(senha) => setRedefinir({ ...redefinir, senha })} />}
       </Modal>
     </>
   );
